@@ -25,3 +25,9 @@
 - https://www.mdpi.com/2075-1680/10/4/307
 - https://atlas.cancer.org.au/developing-a-cancer-atlas/Chapter_4.html
   - overview of spatial models
+- https://uoftcoders.github.io/studyGroup/lessons/python/cartography/lesson/
+  - cartography stuff
+- https://sedac.ciesin.columbia.edu/data/collection/gpw-v4
+  - population data
+- https://www.ism.ac.jp/editsec/aism/pdf/10463_2010_Article_298.pdf
+  - CAR model
