@@ -15,3 +15,13 @@
 - https://gis.stackexchange.com/questions/388608/reduceregions-google-earth-engine-python-api
 
 - https://github.com/pangeo-data/cog-best-practices/blob/main/2-dask-localcluster.ipynb
+
+## modeling geospatial data
+
+- https://www.pymc-labs.io/blog-posts/spatial-gaussian-process-01/
+  - writes a custom covariance kernel that does chordal distance to any points on a sphere
+- https://docs.pymc.io/en/v3/pymc-examples/examples/case_studies/conditional-autoregressive-model.html
+  - CAR model for smoothing
+- https://www.mdpi.com/2075-1680/10/4/307
+- https://atlas.cancer.org.au/developing-a-cancer-atlas/Chapter_4.html
+  - overview of spatial models
