@@ -31,3 +31,9 @@
   - population data
 - https://www.ism.ac.jp/editsec/aism/pdf/10463_2010_Article_298.pdf
   - CAR model
+
+## temperature and landcover
+
+- https://developers.google.com/earth-engine/tutorials/community/intro-to-python-api
+- https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1#bands
+- https://gis.stackexchange.com/questions/304929/what-is-the-difference-between-sample-sampleregions-and-stratifiedsample-in-go

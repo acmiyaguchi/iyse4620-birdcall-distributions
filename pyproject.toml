@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "birdcall-distribution"
+name = "birdcall_distribution"
 version = "0.1.0"
 description = ""
 authors = ["Anthony Miyaguchi <acmiyaguchi@gatech.edu>"]
@@ -13,10 +13,14 @@ pymc = "^4.2.2"
 arviz = "^0.12.1"
 Cartopy = "^0.21.0"
 geopandas = "^0.11.1"
+earthengine-api = "^0.1.330"
 
 
 [tool.poetry.dev-dependencies]
 jupyterlab = "^3.4.5"
+
+[tool.poetry.group.dev.dependencies]
+black = {version = "^22.10.0", allow-prereleases = true}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
