@@ -1,5 +1,11 @@
 # bircall-distribution
 
+To get statistics about elevation, temperature, and land cover classification:
+
+```bash
+python -m birdcall_distribution.commands.earth_engine data/earth_engine.parquet
+```
+
 ## datasets
 
 - https://esa-worldcover.org/en/data-access
