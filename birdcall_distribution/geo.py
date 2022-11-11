@@ -35,3 +35,16 @@ def generate_grid(shape, map_dims, grid_dims):
             if shape.geometry.intersects(polygon):
                 polygons[f"{x}_{y}"] = polygon
     return polygons
+
+
+def generate_grid_adjaceny_list(polygons):
+    """We generate an adjacency list for the same grid of polygons we create.
+    Find any intersecting polygons and add them to the adjacency list.
+    """
+    adj = {}
+    for key, polygon in polygons.items():
+        adj[key] = []
+        for other_key, other_polygon in polygons.items():
+            if key != other_key and polygon.intersects(other_polygon):
+                adj[key].append(other_key)
+    return adj
