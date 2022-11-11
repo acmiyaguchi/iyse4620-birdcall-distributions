@@ -37,6 +37,8 @@ python -m birdcall_distribution.commands.earth_engine data/earth_engine.parquet
   - population data
 - https://www.ism.ac.jp/editsec/aism/pdf/10463_2010_Article_298.pdf
   - CAR model
+- https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html
+  - CAR in STAN
 
 ## temperature and landcover
 
