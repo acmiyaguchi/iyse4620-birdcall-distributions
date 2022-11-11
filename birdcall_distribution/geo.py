@@ -50,3 +50,25 @@ def generate_grid_adjaceny_list(polygons):
             if key != other_key and polygon.intersects(other_polygon):
                 adj[key].append(other_key)
     return adj
+
+
+def get_adjacency_mapping(adjacency_list):
+    """Get a mapping from grid keys to indices in the adjacency matrix."""
+    keys = sorted(adjacency_list.keys())
+    mapping = {key: i for i, key in enumerate(keys)}
+    return mapping
+
+
+def convert_to_adjacency_matrix(adjacency_list):
+    """Convert the adjacency list to an adjacency matrix."""
+    mapping = get_adjacency_mapping(adjacency_list)
+    keys = sorted(adjacency_list.keys())
+
+    n = len(mapping)
+    W = np.zeros((n, n))
+    for key in keys:
+        i = mapping[key]
+        for neighbor in adjacency_list[key]:
+            j = mapping[neighbor]
+            W[i, j] = 1
+    return W
