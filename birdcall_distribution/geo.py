@@ -2,6 +2,8 @@ import numpy as np
 from cartopy.io import shapereader
 from shapely.geometry import Polygon
 
+CA_EXTENT = (-125, -114, 32, 43)
+
 
 def get_shape_us_state(state_name):
     reader = shapereader.Reader(

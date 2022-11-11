@@ -7,7 +7,7 @@ import pandas as pd
 from shapely.geometry import mapping
 from tqdm.auto import tqdm
 
-from birdcall_distribution.geo import generate_grid, get_shape_us_state
+from birdcall_distribution.geo import CA_EXTENT, generate_grid, get_shape_us_state
 
 
 def t_modis_to_celsius(t_modis):
@@ -91,7 +91,7 @@ def main():
     ee.Initialize()
 
     ca_shape = get_shape_us_state("California")
-    grid = generate_grid(ca_shape, (-124, -114, 32, 42), (0.25, 0.25))
+    grid = generate_grid(ca_shape, CA_EXTENT, (0.25, 0.25))
     stats = []
 
     keys = list(grid.keys())
