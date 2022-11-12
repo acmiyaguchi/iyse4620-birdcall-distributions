@@ -54,6 +54,7 @@ python -m birdcall_distribution.commands.earth_engine --parallelism 16 data/eart
 - https://www.nature.com/articles/s41598-019-49549-4
   - spatial random effects with icar
 - http://stronginference.com/missing-data-imputation.html
+- https://cran.r-project.org/web/packages/CARBayes/vignettes/CARBayes.pdf
 
 ## temperature and landcover
 
