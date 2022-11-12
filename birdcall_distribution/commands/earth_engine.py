@@ -85,18 +85,20 @@ def main():
     """Run google earth engine to get elevation, temperature, and land cover data."""
     parser = ArgumentParser()
     parser.add_argument("output", type=str)
+    # add option for grid size
+    parser.add_argument("--grid-size", type=int, default=0.75)
     parser.add_argument("--parallelism", type=int, default=8)
     args = parser.parse_args()
 
     ee.Initialize()
 
     ca_shape = get_shape_us_state("California")
-    grid = generate_grid(ca_shape, CA_EXTENT, (0.25, 0.25))
+    grid = generate_grid(ca_shape, CA_EXTENT, (args.grid_size, args.grid_size))
     stats = []
 
     keys = list(grid.keys())
 
-    with Pool(8) as p:
+    with Pool(args.parallelism) as p:
         stats = list(
             tqdm(
                 p.imap(partial(get_stats, grid), keys),
@@ -104,6 +106,7 @@ def main():
             )
         )
     df = pd.DataFrame(stats)
+    df.insert(1, "grid_size", args.grid_size)
     print(df.head())
     df.to_parquet(args.output)
 

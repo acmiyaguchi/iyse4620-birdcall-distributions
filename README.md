@@ -3,7 +3,11 @@
 To get statistics about elevation, temperature, and land cover classification:
 
 ```bash
+# v1 - includes basic information
 python -m birdcall_distribution.commands.earth_engine data/earth_engine.parquet
+
+# v2 - includes the grid size
+python -m birdcall_distribution.commands.earth_engine --parallelism 16 data/earth_engine_v2.parquet
 ```
 
 ## datasets
