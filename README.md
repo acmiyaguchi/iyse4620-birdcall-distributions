@@ -55,6 +55,11 @@ python -m birdcall_distribution.commands.earth_engine --parallelism 16 data/eart
   - spatial random effects with icar
 - http://stronginference.com/missing-data-imputation.html
 - https://cran.r-project.org/web/packages/CARBayes/vignettes/CARBayes.pdf
+- https://discourse.pymc.io/t/issues-with-poisson-regression-using-glm-method/1053
+- https://discourse.pymc.io/t/biased-results-from-poisson-regression-model/4349/3
+- https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5427491/
+- https://www.frontiersin.org/articles/10.3389/fevo.2021.588292/full
+- https://www.pymc.io/projects/examples/en/latest/generalized_linear_models/GLM-negative-binomial-regression.html
 
 ## temperature and landcover
 
