@@ -1,6 +1,7 @@
 import numpy as np
+import pandas as pd
 from cartopy.io import shapereader
-from shapely.geometry import Polygon
+from shapely.geometry import Point, Polygon
 
 CA_EXTENT = (-125, -114, 32, 43)
 
@@ -39,6 +40,26 @@ def generate_grid(shape, map_dims, grid_dims):
     return polygons
 
 
+def _maybe_get_polygon_pair(polygons, point):
+    """Return the first polygon that contains a point."""
+    for key, polygon in polygons.items():
+        if polygon.contains(point):
+            return key, polygon
+    return None, None
+
+
+def add_lonlat_columns(df, grid):
+    """Add a grid columns to a dataframe."""
+    pair = df.apply(
+        lambda row: _maybe_get_polygon_pair(grid, Point(row.longitude, row.latitude)),
+        axis="columns",
+        result_type="expand",
+    )
+    pair.columns = ["grid_id", "grid"]
+    df = pd.concat([df, pair], axis="columns")
+    return df
+
+
 def generate_grid_adjaceny_list(polygons):
     """We generate an adjacency list for the same grid of polygons we create.
     Find any intersecting polygons and add them to the adjacency list.
@@ -71,4 +92,4 @@ def convert_to_adjacency_matrix(adjacency_list):
         for neighbor in adjacency_list[key]:
             j = mapping[neighbor]
             W[i, j] = 1
-    return W
+    return W.astype(int)

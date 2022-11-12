@@ -39,6 +39,17 @@ python -m birdcall_distribution.commands.earth_engine data/earth_engine.parquet
   - CAR model
 - https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html
   - CAR in STAN
+- https://timeseriesreasoning.com/contents/exogenous-and-endogenous-variables/
+  - exogenous variables in a model?
+- https://oriolabrilpla.cat/python/arviz/pymc3/xarray/2020/09/22/pymc3-arviz.html
+  - dealing with coords in pymc
+- https://stats.stackexchange.com/questions/561263/poisson-or-binomial-distribution-for-modeling
+  - binomial or poisson?
+- https://onlinelibrary.wiley.com/doi/full/10.1111/ecog.06022
+  - bernoulli?
+- https://www.nature.com/articles/s41598-019-49549-4
+  - spatial random effects with icar
+- http://stronginference.com/missing-data-imputation.html
 
 ## temperature and landcover
 
