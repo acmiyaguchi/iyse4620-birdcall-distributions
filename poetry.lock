@@ -716,6 +716,47 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "jax"
+version = "0.3.24"
+description = "Differentiate, compile, and transform Numpy code."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = ">=1.20"
+opt_einsum = "*"
+scipy = ">=1.5"
+typing_extensions = "*"
+
+[package.extras]
+australis = ["protobuf (>=3.13,<4)"]
+ci = ["jaxlib (==0.3.22)"]
+cpu = ["jaxlib (==0.3.24)"]
+cuda = ["jaxlib (==0.3.24+cuda11.cudnn82)"]
+cuda11_cudnn805 = ["jaxlib (==0.3.24+cuda11.cudnn805)"]
+cuda11_cudnn82 = ["jaxlib (==0.3.24+cuda11.cudnn82)"]
+minimum-jaxlib = ["jaxlib (==0.3.22)"]
+tpu = ["jaxlib (==0.3.24)", "libtpu-nightly (==0.1.dev20221103)", "requests"]
+
+[[package]]
+name = "jaxlib"
+version = "0.3.24+cuda11.cudnn82"
+description = "XLA library for JAX"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = ">=1.20"
+scipy = ">=1.5"
+
+[package.source]
+type = "legacy"
+url = "https://storage.googleapis.com/jax-releases/jax_cuda_releases.html"
+reference = "jax"
+
+[[package]]
 name = "jedi"
 version = "0.18.1"
 description = "An autocompletion tool for Python that can be used for text editors."
@@ -1173,6 +1214,45 @@ description = "NumPy is the fundamental package for array computing with Python.
 category = "main"
 optional = false
 python-versions = ">=3.8"
+
+[[package]]
+name = "numpyro"
+version = "0.10.1"
+description = "Pyro PPL on NumPy"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+jax = ">=0.2.13"
+jaxlib = ">=0.1.65"
+multipledispatch = "*"
+numpy = "*"
+tqdm = "*"
+
+[package.extras]
+cpu = ["jax[cpu] (>=0.2.13)"]
+cuda = ["jax[cuda] (>=0.2.13)"]
+dev = ["dm-haiku", "flax", "funsor (>=0.4.1)", "graphviz", "jaxns (==1.0.0)", "optax (>=0.0.6)", "pyyaml", "tensorflow-probability (>=0.15.0)"]
+doc = ["ipython", "nbsphinx (>=0.8.5)", "readthedocs-sphinx-search (==0.1.0)", "sphinx", "sphinx-gallery", "sphinx-rtd-theme"]
+examples = ["arviz", "jupyter", "matplotlib", "pandas", "scikit-learn", "seaborn", "wordcloud"]
+test = ["black[jupyter] (>=21.8b0)", "flake8", "isort (>=5.0)", "pyro-api (>=0.1.1)", "pytest (>=4.1)", "scipy (>=1.6,<1.7)"]
+tpu = ["jax[tpu] (>=0.2.13)"]
+
+[[package]]
+name = "opt-einsum"
+version = "3.3.0"
+description = "Optimizing numpys einsum function"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+numpy = ">=1.7"
+
+[package.extras]
+docs = ["numpydoc", "sphinx (==1.2.3)", "sphinx-rtd-theme", "sphinxcontrib-napoleon"]
+tests = ["pytest", "pytest-cov", "pytest-pep8"]
 
 [[package]]
 name = "packaging"
@@ -1850,7 +1930,7 @@ test = ["hypothesis", "pytest", "pytest-cov"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "b965da3c05d61b00a308d896eed1ff7498e51fa69f1bfefac3e54ae135e63921"
+content-hash = "8c768d538fe31c58170fd966c55d5d38f27e553a1f9c674d3b01f5bb21581cfa"
 
 [metadata.files]
 aeppl = [
@@ -2328,6 +2408,16 @@ ipython_genutils = [
     {file = "ipython_genutils-0.2.0-py2.py3-none-any.whl", hash = "sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8"},
     {file = "ipython_genutils-0.2.0.tar.gz", hash = "sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8"},
 ]
+jax = [
+    {file = "jax-0.3.24.tar.gz", hash = "sha256:54c0002926a1898e7c7afdc2a14fbdcac04188bcaa359bc3389a30ea464a513a"},
+]
+jaxlib = [
+    {file = "jaxlib-0.3.24+cuda11.cudnn82-cp310-cp310-manylinux2014_x86_64.whl", hash = "sha256:e085ba12bed53602af7cd5134de69d04bb9a0b27637658451c4c13d12912d489"},
+    {file = "jaxlib-0.3.24+cuda11.cudnn82-cp311-cp311-manylinux2014_x86_64.whl", hash = "sha256:596bc17da95c8e0b4334a9837d9484da08a95348222ae9cbd186271a697bc2cf"},
+    {file = "jaxlib-0.3.24+cuda11.cudnn82-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:3ec8be6a7b10667d8f983a0dfc520e0b604b8da1bcf7687d9eb253b0d9916061"},
+    {file = "jaxlib-0.3.24+cuda11.cudnn82-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:27e618f55d9fcd7a43f6c9a6c62a26c8d0d1764c62b05503db67fe4526551d00"},
+    {file = "jaxlib-0.3.24+cuda11.cudnn82-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:31f8d835048aa309ec1fcae0f3823a82039108962a7eea013b81c18decaa16a3"},
+]
 jedi = [
     {file = "jedi-0.18.1-py2.py3-none-any.whl", hash = "sha256:637c9635fcf47945ceb91cd7f320234a7be540ded6f3e99a50cb6febdfd1ba8d"},
     {file = "jedi-0.18.1.tar.gz", hash = "sha256:74137626a64a99c8eb6ae5832d99b3bdd7d29a3850fe2aa80a4126b2a7d949ab"},
@@ -2637,6 +2727,14 @@ numpy = [
     {file = "numpy-1.23.4-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:296d17aed51161dbad3c67ed6d164e51fcd18dbcd5dd4f9d0a9c6055dce30810"},
     {file = "numpy-1.23.4-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:4d52914c88b4930dafb6c48ba5115a96cbab40f45740239d9f4159c4ba779962"},
     {file = "numpy-1.23.4.tar.gz", hash = "sha256:ed2cc92af0efad20198638c69bb0fc2870a58dabfba6eb722c933b48556c686c"},
+]
+numpyro = [
+    {file = "numpyro-0.10.1-py3-none-any.whl", hash = "sha256:9833ee834c3bb1e57acd30dca6263aaf8926bf3b92f903e1a3276621fc3a184c"},
+    {file = "numpyro-0.10.1.tar.gz", hash = "sha256:dfa896f01c8df43ddd41663af2b3e2fc4aea73489e669474e83329b183b29150"},
+]
+opt-einsum = [
+    {file = "opt_einsum-3.3.0-py3-none-any.whl", hash = "sha256:2455e59e3947d3c275477df7f5205b30635e266fe6dc300e3d9f9646bfcea147"},
+    {file = "opt_einsum-3.3.0.tar.gz", hash = "sha256:59f6475f77bbc37dcf7cd748519c0ec60722e91e63ca114e68821c0c54a46549"},
 ]
 packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
