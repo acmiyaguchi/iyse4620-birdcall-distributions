@@ -26,6 +26,10 @@ python -m birdcall_distribution.commands.earth_engine --parallelism 16 data/eart
 
 - https://github.com/pangeo-data/cog-best-practices/blob/main/2-dask-localcluster.ipynb
 
+## pymc
+
+- https://github.com/pymc-devs/pymc/wiki/Set-up-JAX-sampling-with-GPUs-in-PyMC-v4
+
 ## modeling geospatial data
 
 - https://www.pymc-labs.io/blog-posts/spatial-gaussian-process-01/
@@ -60,7 +64,9 @@ python -m birdcall_distribution.commands.earth_engine --parallelism 16 data/eart
 - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5427491/
 - https://www.frontiersin.org/articles/10.3389/fevo.2021.588292/full
 - https://www.pymc.io/projects/examples/en/latest/generalized_linear_models/GLM-negative-binomial-regression.html
-- https://files.alz.washington.edu/presentations/2020/fall/Malek-Ahmadi.pdf
+- https://files.alz.washington.edu/presentations/2020/fall/Malek-Ahmadi.pdf\
+- https://search.r-project.org/CRAN/refmans/sads/html/dpoilog.html
+- https://stats.stackexchange.com/questions/561263/poisson-or-binomial-distribution-for-modeling
 
 ## temperature and landcover
 
