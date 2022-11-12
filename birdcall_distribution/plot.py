@@ -15,7 +15,9 @@ def dataframe_color_getter(df, key_col, value_col, key):
         return (1, 1, 1, 0)
 
 
-def plot_grid(shape, map_dims, grid, color_callback=None, vmin=None, vmax=None):
+def plot_grid(
+    shape, map_dims, grid, color_callback=None, vmin=None, vmax=None, draw_gridline=True
+):
     xmin, xmax, ymin, ymax = map_dims
 
     # plot map with lattice of polygons
@@ -24,7 +26,8 @@ def plot_grid(shape, map_dims, grid, color_callback=None, vmin=None, vmax=None):
     ax = plt.axes(projection=projection)
     ax.set_xlim([xmin, xmax])
     ax.set_ylim([ymin, ymax])
-    ax.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
+    if draw_gridline:
+        ax.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
 
     for key, polygon in grid.items():
         ax.add_feature(
