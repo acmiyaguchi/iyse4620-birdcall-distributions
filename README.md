@@ -60,6 +60,7 @@ python -m birdcall_distribution.commands.earth_engine --parallelism 16 data/eart
 - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5427491/
 - https://www.frontiersin.org/articles/10.3389/fevo.2021.588292/full
 - https://www.pymc.io/projects/examples/en/latest/generalized_linear_models/GLM-negative-binomial-regression.html
+- https://files.alz.washington.edu/presentations/2020/fall/Malek-Ahmadi.pdf
 
 ## temperature and landcover
 
