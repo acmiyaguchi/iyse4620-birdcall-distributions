@@ -7,7 +7,13 @@ import pandas as pd
 from shapely.geometry import mapping
 from tqdm.auto import tqdm
 
-from birdcall_distribution.geo import CA_EXTENT, generate_grid, get_shape_us_state
+from birdcall_distribution.geo import (
+    CA_EXTENT,
+    WESTERN_US_EXTENT,
+    generate_grid,
+    get_california_geometry,
+    get_western_us_geometry,
+)
 
 
 def t_modis_to_celsius(t_modis):
@@ -26,8 +32,12 @@ def get_stats(grid, key, start_ds="2019-01-01", end_ds="2022-01-01", scale=1000)
     # Import the USGS ground elevation image.
     elevation = (
         ee.Image("USGS/SRTMGL1_003")
-        .sample(poi, scale)
-        .aggregate_stats("elevation")
+        .select("elevation")
+        .reduceRegion(
+            ee.Reducer.percentile([5, 50, 95]),
+            poi,
+            scale=scale,
+        )
         .getInfo()
     )
 
@@ -36,16 +46,19 @@ def get_stats(grid, key, start_ds="2019-01-01", end_ds="2022-01-01", scale=1000)
     # we need to filter it first
     surface_temp = (
         ee.ImageCollection("MODIS/006/MOD11A1")
-        .select("LST_Day_1km", "LST_Night_1km", "QC_Day", "QC_Night")
+        .select("LST_Day_1km", "LST_Night_1km")
         .filterDate(start_ds, end_ds)
         .mean()
-        .sample(poi, scale=scale)
+        .reduceRegion(
+            ee.Reducer.percentile([5, 50, 95]),
+            poi,
+            scale=scale,
+        )
+        .getInfo()
     )
 
-    surface_temp_day = surface_temp.aggregate_stats("LST_Day_1km").getInfo()
-    surface_temp_night = surface_temp.aggregate_stats("LST_Night_1km").getInfo()
-
     # Import the MODIS land cover collection.
+    # https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1#bands
     land_cover = (
         ee.ImageCollection("MODIS/006/MCD12Q1")
         .first()
@@ -54,29 +67,15 @@ def get_stats(grid, key, start_ds="2019-01-01", end_ds="2022-01-01", scale=1000)
         .getInfo()
     )
 
-    # count the total number of pixels, and also normalize the values of the
-    # scores knowing the set of keys ahead of time and we use laplace smoothing
-    # to avoid zero counts
-    total_pixels = sum(land_cover.values())
+    # count the total number of pixels, do not smooth to account for differences
     keys = list(range(1, 18))
-    land_cover = {
-        f"land_cover_{k:02d}": (land_cover.get(str(k), 0) + 1)
-        / (total_pixels + len(keys))
-        for k in keys
-    }
+    land_cover = {f"land_cover_{k:02d}": land_cover.get(str(k), 0) for k in keys}
 
     return dict(
         name=key,
-        total_pixels=total_pixels,
-        elevation_mean=elevation["mean"],
-        elevation_min=elevation["min"],
-        elevation_max=elevation["max"],
-        day_temp_mean=t_modis_to_celsius(surface_temp_day["mean"]),
-        day_temp_min=t_modis_to_celsius(surface_temp_day["min"]),
-        day_temp_max=t_modis_to_celsius(surface_temp_day["max"]),
-        night_temp_mean=t_modis_to_celsius(surface_temp_night["mean"]),
-        night_temp_min=t_modis_to_celsius(surface_temp_night["min"]),
-        night_temp_max=t_modis_to_celsius(surface_temp_night["max"]),
+        **elevation,
+        # map over values and convert to celsius
+        **{k: t_modis_to_celsius(v) for k, v in surface_temp.items()},
         **land_cover,
     )
 
@@ -84,16 +83,24 @@ def get_stats(grid, key, start_ds="2019-01-01", end_ds="2022-01-01", scale=1000)
 def main():
     """Run google earth engine to get elevation, temperature, and land cover data."""
     parser = ArgumentParser()
+    parser.add_argument("region", type=str, choices=["ca", "western_us"])
+    parser.add_argument("grid_size", type=int)
     parser.add_argument("output", type=str)
-    # add option for grid size
-    parser.add_argument("--grid-size", type=int, default=0.75)
     parser.add_argument("--parallelism", type=int, default=8)
     args = parser.parse_args()
 
     ee.Initialize()
 
-    ca_shape = get_shape_us_state("California")
-    grid = generate_grid(ca_shape, CA_EXTENT, (args.grid_size, args.grid_size))
+    if args.region == "ca":
+        geometry = get_california_geometry()
+        extent = CA_EXTENT
+    elif args.region == "western_us":
+        geometry = get_western_us_geometry()
+        extent = WESTERN_US_EXTENT
+    else:
+        raise ValueError(f"Invalid region: {args.region}")
+
+    grid = generate_grid(geometry, extent, (args.grid_size, args.grid_size))
     stats = []
 
     keys = list(grid.keys())
@@ -107,6 +114,7 @@ def main():
         )
     df = pd.DataFrame(stats)
     df.insert(1, "grid_size", args.grid_size)
+    df.insert(1, "region", args.region)
     print(df.head())
     df.to_parquet(args.output)
 

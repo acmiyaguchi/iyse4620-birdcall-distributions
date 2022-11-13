@@ -2,8 +2,10 @@ import numpy as np
 import pandas as pd
 from cartopy.io import shapereader
 from shapely.geometry import Point, Polygon
+from shapely.ops import unary_union
 
 CA_EXTENT = (-125, -114, 32, 43)
+WESTERN_US_EXTENT = (-125, -101, 31, 50)
 
 
 def get_shape_us_state(state_name):
@@ -21,12 +23,37 @@ def get_shape_us_state(state_name):
     return shape
 
 
-def generate_grid(shape, map_dims, grid_dims):
-    """Generate a regular lattice of squares that cover a shape."""
+def get_california_geometry():
+    """Get the geometry for California."""
+    shape = get_shape_us_state("California")
+    return shape.geometry
+
+
+def get_western_us_geometry():
+    """Get the geometry for the western US."""
+    states = [
+        "Washington",
+        "Oregon",
+        "California",
+        "Nevada",
+        "Idaho",
+        "Montana",
+        "Wyoming",
+        "Utah",
+        "Colorado",
+        "Arizona",
+        "New Mexico",
+    ]
+    shapes = [get_shape_us_state(state).geometry for state in states]
+    return unary_union(shapes)
+
+
+def generate_grid(geometry, map_dims, grid_dims):
+    """Generate a regular lattice of squares that cover a geometry."""
     xmin, xmax, ymin, ymax = map_dims
     length, width = grid_dims
 
-    # generate a grid of polygons that intersect with the provided shape
+    # generate a grid of polygons that intersect with the provided geometry
     polygons = {}
     cols = list(np.arange(xmin, xmax + width, width))
     rows = list(np.arange(ymin, ymax + length, length))
@@ -35,7 +62,7 @@ def generate_grid(shape, map_dims, grid_dims):
             polygon = Polygon(
                 [(x, y), (x + width, y), (x + width, y + length), (x, y + length)]
             )
-            if shape.geometry.intersects(polygon):
+            if geometry.intersects(polygon):
                 polygons[f"{x}_{y}"] = polygon
     return polygons
 
@@ -93,3 +120,28 @@ def convert_to_adjacency_matrix(adjacency_list):
             j = mapping[neighbor]
             W[i, j] = 1
     return W.astype(int)
+
+
+def get_modis_land_cover_name(col_name):
+    """Get the name of a MODIS land cover column."""
+    value = int(col_name.split("_")[-1])
+    codes = {
+        1: "Evergreen Needleleaf Forest",
+        2: "Evergreen Broadleaf Forest",
+        3: "Deciduous Needleleaf Forest",
+        4: "Deciduous Broadleaf Forest",
+        5: "Mixed Forests",
+        6: "Closed Shrublands",
+        7: "Open Shrublands",
+        8: "Woody Savannas",
+        9: "Savannas",
+        10: "Grasslands",
+        11: "Permanent Wetlands",
+        12: "Croplands",
+        13: "Urban and Built-Up",
+        14: "Cropland/Natural Vegetation",
+        15: "Permanent Snow and Ice",
+        16: "Barren or Sparsely Vegetated",
+        17: "Water Bodies",
+    }
+    return codes[value]

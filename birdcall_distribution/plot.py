@@ -15,13 +15,41 @@ def dataframe_color_getter(df, key_col, value_col, key):
         return (1, 1, 1, 0)
 
 
-def plot_grid(
-    shape, map_dims, grid, color_callback=None, vmin=None, vmax=None, draw_gridline=True
-):
+def plot_lonlat_points(geometry, map_dims, df):
     xmin, xmax, ymin, ymax = map_dims
 
     # plot map with lattice of polygons
     fig = plt.figure(figsize=(12, 7))
+    projection = ccrs.PlateCarree()
+    ax = plt.axes(projection=projection)
+    ax.set_xlim([xmin, xmax])
+    ax.set_ylim([ymin, ymax])
+    ax.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
+
+    ax.add_feature(
+        cfeature.ShapelyFeature([geometry], projection),
+        edgecolor="k",
+        facecolor=(1, 1, 1, 0),
+    )
+
+    ax.scatter(df["longitude"], df["latitude"], transform=ccrs.PlateCarree())
+    ax.stock_img()
+
+
+def plot_grid(
+    geometry,
+    map_dims,
+    grid,
+    color_callback=None,
+    vmin=None,
+    vmax=None,
+    draw_gridline=True,
+    figsize=(12, 7),
+):
+    xmin, xmax, ymin, ymax = map_dims
+
+    # plot map with lattice of polygons
+    fig = plt.figure(figsize=figsize)
     projection = ccrs.PlateCarree()
     ax = plt.axes(projection=projection)
     ax.set_xlim([xmin, xmax])
@@ -37,7 +65,7 @@ def plot_grid(
         )
 
     ax.add_feature(
-        cfeature.ShapelyFeature([shape.geometry], projection),
+        cfeature.ShapelyFeature([geometry], projection),
         edgecolor="k",
         facecolor=(1, 1, 1, 0),
     )

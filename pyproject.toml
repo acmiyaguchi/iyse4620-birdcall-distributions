@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "birdcall_distribution"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Anthony Miyaguchi <acmiyaguchi@gatech.edu>"]
 license = "MIT"

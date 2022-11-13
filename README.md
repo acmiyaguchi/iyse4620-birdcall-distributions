@@ -8,6 +8,15 @@ python -m birdcall_distribution.commands.earth_engine data/earth_engine.parquet
 
 # v2 - includes the grid size
 python -m birdcall_distribution.commands.earth_engine --parallelism 16 data/earth_engine_v2.parquet
+
+# v3 - add a new region, use percentiles as primary data summarization technique
+python -m birdcall_distribution.commands.earth_engine \
+  --parallelism 16 \
+  ca 1 data/ee_v3_ca_1.parquet
+
+python -m birdcall_distribution.commands.earth_engine \
+  --parallelism 16 \
+  western_us 2 data/ee_v3_western_us_2.parquet
 ```
 
 ## datasets
