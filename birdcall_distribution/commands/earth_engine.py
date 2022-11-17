@@ -25,9 +25,19 @@ def t_modis_to_celsius(t_modis):
 
 
 def get_stats(grid, key, start_ds="2019-01-01", end_ds="2022-01-01", scale=1000):
-    """Get statistics for elevation, temperature, and land cover."""
+    """Get statistics for population, elevation, temperature, and land cover."""
     geojson = mapping(grid[key])
     poi = ee.Geometry.Polygon(geojson["coordinates"])
+
+    # population
+    population_density = (
+        ee.ImageCollection("CIESIN/GPWv411/GPW_Population_Density")
+        .select("population_density")
+        .limit(1, "system:time_start", False)
+        .first()
+        .reduceRegion(ee.Reducer.sum(), poi, scale)
+        .getInfo()
+    )
 
     # Import the USGS ground elevation image.
     elevation = (
@@ -73,6 +83,7 @@ def get_stats(grid, key, start_ds="2019-01-01", end_ds="2022-01-01", scale=1000)
 
     return dict(
         name=key,
+        **population_density,
         **elevation,
         # map over values and convert to celsius
         **{k: t_modis_to_celsius(v) for k, v in surface_temp.items()},
