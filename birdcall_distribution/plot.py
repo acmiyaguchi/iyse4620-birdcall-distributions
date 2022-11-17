@@ -71,7 +71,12 @@ def plot_grid(
     )
 
     if color_callback:
-        cbar = fig.colorbar(plt.matplotlib.cm.ScalarMappable(norm=None, cmap="viridis"))
+        # some magic numbers for scaling: https://stackoverflow.com/a/26720422
+        cbar = fig.colorbar(
+            plt.matplotlib.cm.ScalarMappable(norm=None, cmap="viridis"),
+            fraction=0.04,
+            pad=0.04,
+        )
         cbar.set_ticks(np.linspace(0, 1, 6))
         cbar.set_ticklabels(
             [
