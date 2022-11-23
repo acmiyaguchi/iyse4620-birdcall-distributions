@@ -19,6 +19,11 @@ python -m birdcall_distribution.commands.earth_engine \
   western_us 2 data/ee_v3_western_us_2.parquet
 ```
 
+```bash
+gcloud storage buckets create gs://iyse6420-birdcall-distribution
+gcloud storage cp -r data/ gs://iyse6420-birdcall-distribution/
+```
+
 ## datasets
 
 - https://esa-worldcover.org/en/data-access
