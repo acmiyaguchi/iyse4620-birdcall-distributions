@@ -1,7 +1,11 @@
+from functools import partial
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 import numpy as np
+
+from .geo import get_grid_meta
 
 
 def dataframe_color_getter(df, key_col, value_col, key):
@@ -85,3 +89,57 @@ def plot_grid(
             ]
         )
     ax.stock_img()
+
+
+def plot_species(df, species, prop="y"):
+    """Used to plot the distribution of a species in a dataset"""
+    sub_df = df[df.primary_label == species]
+    region = sub_df.region.values[0]
+    grid_size = sub_df.grid_size.values[0]
+    grid_meta = get_grid_meta(region, grid_size)
+    plot_grid(
+        grid_meta.geometry,
+        grid_meta.extent,
+        grid_meta.grid,
+        color_callback=partial(dataframe_color_getter, sub_df, "grid_id", prop),
+        vmin=sub_df[prop].min(),
+        vmax=sub_df[prop].max(),
+        draw_gridline=False,
+        figsize=(5, 7),
+    )
+
+    plt.title(f"Birdcall Recording Frequency for {species}")
+    plt.show()
+
+
+def plot_ppc_species(prep_df, ppc, species, prop="log_pred"):
+    pred_df = prep_df.copy()
+    shape = prep_df.shape
+    pred_df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, shape[0]).mean(
+        axis=0
+    )
+    pred_df["log_pred"] = np.log(pred_df.pred)
+    pred_df = pred_df[prep_df.primary_label == species]
+
+    plt.figure(figsize=(5, 3))
+    plt.hist(pred_df[prop], bins=20)
+    plt.title(f"histogram of {prop} for {species}")
+    plt.show()
+
+    region = pred_df.region.values[0]
+    grid_size = pred_df.grid_size.values[0]
+    grid_meta = get_grid_meta(region, grid_size)
+
+    # plot the posterior predictive
+    plot_grid(
+        grid_meta.geometry,
+        grid_meta.extent,
+        grid_meta.grid,
+        color_callback=partial(dataframe_color_getter, pred_df, "grid_id", prop),
+        vmin=pred_df[prop].min(),
+        vmax=pred_df[prop].max(),
+        draw_gridline=False,
+        figsize=(5, 7),
+    )
+    plt.title(f"Birdcall Recording Frequency prediction for {species}")
+    plt.show()

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
 from cartopy.io import shapereader
@@ -65,6 +67,29 @@ def generate_grid(geometry, map_dims, grid_dims):
             if geometry.intersects(polygon):
                 polygons[f"{x}_{y}"] = polygon
     return polygons
+
+
+@dataclass
+class Grid:
+    region: str
+    geometry: Polygon
+    extent: tuple[float, float, float, float]
+    grid_size: int
+    grid: dict[str, Polygon]
+
+
+def get_grid_meta(region, grid_size):
+    """Get the grid metadata for a region."""
+    if region == "western_us":
+        geometry = get_western_us_geometry()
+        extent = WESTERN_US_EXTENT
+    elif region == "california":
+        geometry = get_california_geometry()
+        extent = CA_EXTENT
+    else:
+        raise ValueError("Unknown region")
+    grid = generate_grid(geometry, extent, (grid_size, grid_size))
+    return Grid(region, geometry, extent, grid_size, grid)
 
 
 def _maybe_get_polygon_pair(polygons, point):
