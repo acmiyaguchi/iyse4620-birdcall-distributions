@@ -43,6 +43,8 @@ gcloud storage cp -r data/ gs://iyse6420-birdcall-distribution/
 ## pymc
 
 - https://github.com/pymc-devs/pymc/wiki/Set-up-JAX-sampling-with-GPUs-in-PyMC-v4
+- https://twiecki.io/blog/2014/03/17/bayesian-glms-3/
+- https://docs.pymc.io/en/v3/pymc-examples/examples/case_studies/multilevel_modeling.html
 
 ## modeling geospatial data
 
