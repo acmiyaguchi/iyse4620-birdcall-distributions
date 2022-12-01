@@ -24,6 +24,15 @@ gcloud storage buckets create gs://iyse6420-birdcall-distribution
 gcloud storage cp -r data/ gs://iyse6420-birdcall-distribution/
 ```
 
+https://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+```
+# for windows only
+pip install data/Cartopy-0.20.2-cp310-cp310-win_amd64.whl
+pip install data/Shapely-1.8.2-cp310-cp310-win_amd64.whl
+pip install data/pyproj-3.3.1-cp310-cp310-win_amd64.whl
+```
+
 ## datasets
 
 - https://esa-worldcover.org/en/data-access
@@ -80,7 +89,7 @@ gcloud storage cp -r data/ gs://iyse6420-birdcall-distribution/
 - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5427491/
 - https://www.frontiersin.org/articles/10.3389/fevo.2021.588292/full
 - https://www.pymc.io/projects/examples/en/latest/generalized_linear_models/GLM-negative-binomial-regression.html
-- https://files.alz.washington.edu/presentations/2020/fall/Malek-Ahmadi.pdf\
+- https://files.alz.washington.edu/presentations/2020/fall/Malek-Ahmadi.pdf
 - https://search.r-project.org/CRAN/refmans/sads/html/dpoilog.html
 - https://stats.stackexchange.com/questions/561263/poisson-or-binomial-distribution-for-modeling
 

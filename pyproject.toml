@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "birdcall_distribution"
-version = "0.2.0"
+version = "0.3.0"
 description = ""
 authors = ["Anthony Miyaguchi <acmiyaguchi@gatech.edu>"]
 license = "MIT"
@@ -11,25 +11,27 @@ matplotlib = "^3.5.3"
 pandas = "^1.5.1"
 pymc = "^4.3.0"
 arviz = "*"
-Cartopy = "^0.21.0"
+# NOTE: this does not install on windows, so run on a different machine if you
+# need to download any geometries
+Cartopy = { version = "^0.21.0", optional = true }
 earthengine-api = "^0.1.330"
 tqdm = "^4.64.1"
 pyarrow = "^10.0.0"
 graphviz = "^0.20.1"
 scikit-learn = "^1.1.3"
-jax = {extras = ["gpu"], version = "^0.3.24", optional = true}
-jaxlib = {version = "^0.3.24+cuda11.cudnn82", optional = true}
-numpyro = {version = "^0.10.1", optional= true}
+jax = { version = "^0.3.24", optional = true }
+jaxlib = { version = "^0.3.24+cuda11.cudnn82", optional = true }
+numpyro = { version = "^0.10.1", optional = true }
 
 [tool.poetry.extras]
 gpu = ["jax", "jaxlib", "numpyro"]
+cartopy = ["Cartopy"]
 
 [tool.poetry.dev-dependencies]
 jupyterlab = "^3.4.5"
 
 [tool.poetry.group.dev.dependencies]
-black = {version = "^22.10.0", allow-prereleases = true}
-
+black = { version = "^22.10.0", allow-prereleases = true }
 
 [[tool.poetry.source]]
 name = "jax"
