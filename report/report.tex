@@ -1,18 +1,13 @@
 \documentclass[notitlepage]{article}
 %twocolumn for two columns saves space
 
+\usepackage{amsmath}
 \usepackage{fullpage}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{subcaption}
 \usepackage{amsfonts}
-\usepackage{siunitx}
-\usepackage[ruled,vlined]{algorithm2e}
 \usepackage{booktabs}
-
-% https://tex.stackexchange.com/questions/6850/table-and-figure-side-by-side-with-independent-captions
-\usepackage{floatrow}
-\newfloatcommand{capbtabbox}{table}[][\FBwidth]
 
 % space saving
 \usepackage[text={16cm,24cm}]{geometry}
@@ -22,6 +17,8 @@
 \usepackage[backend=biber,style=ieee,sorting=ynt]{biblatex}
 \bibliography{citation}
 
+% https://tex.stackexchange.com/questions/111948/what-is-a-overfull-hbox-9-89561pt-too-wide
+\sloppy
 
 \title{BirdCLEF Birdcall Distribution Maps}
 
@@ -29,7 +26,6 @@
 \author{
     Anthony Miyaguchi \\  \texttt{acmiyaguchi@gatech.edu}
 }
-
 
 \begin{document}
 \maketitle
@@ -55,21 +51,21 @@ The competition hosts provide a training dataset derived from xeno-canto, a crow
 \section{Dataset}
 \subsection{BirdCLEF 2022 Training Metadata}
 
-The BirdCLEF 2022 competition provides TODO recordings from TODO species.
+The BirdCLEF 2022 competition provides over 14,800 recordings from 152 species \cite{kahl2022overview}.
 We are interested in the spatial features from the recording metadata, which are the latitude and longitude of the recording.
 The recordings in the competition dataset are drawn from the xeno-canto library, but it does not reflect the entirety of the library.
 Each species is capped to 500 recordings in the dataset, with frequency of recordings generally correlated with their rarity in nature and population density among other factors.
 
 \subsection{Google Earth Engine}
 
-Google Earth Engine is a cloud-based platform for processing geospatial data.
+Google Earth Engine is a cloud-based platform for processing geospatial data \cite{gorelick_google_2017}.
 We use Earth Engine to access remote sensing data from the United States Geological Survey (USGS) and the National Aeronautics and Space Administration (NASA).
 We obtain elevation, temperature, land cover classification, and population density data from various sources hosted on Earth Engine.
 
-Elevation data is derived from TODO.
-Temperature data is derived from TODO.
-Land cover classification data is derived from TODO.
-Population density data is derived from TODO.
+Elevation data is derived from the NASA Shuttle Radar Topography Mission dataset (\texttt{USGS/SRTMGL1\_003}) \cite{nasa_srtmg}.
+Temperature data is derived from the MODIS/Terra Land Surface Temperature/Emissivity dataset (\texttt{MODIS/006/MOD11A1}) \cite{wan_zhengming_mod11a1_2015}.
+Land cover classification data is derived from the MODIS/Terra+Aqua Land Cover Type dataset (\texttt{MODIS/006/MCD12Q1}) \cite{friedl_mark_mcd12q1_2019}.
+Population density data is derived from the Gridded Population of the World, Version 4 dataset (\texttt{CIESIN/GPWv411/GPW\_Population\_Density}) \cite{gpwv4}.
 
 We generate a regular lattice of polygons from area-of-interest (AOI) geometries which are used to generate a dataset for a region at a particular fraction of a degree resolution.
 We choose California and the Western United States as our AOI, due to familiarity with the region and diversity of geography and climate.
@@ -99,7 +95,9 @@ where
 \end{equation}
 
 
-This is a special form of the multivariate normal with with a covariance matrix that captures the adjacency structure of the neighborhood graph.
+This is a special form of the multivariate normal with with a covariance matrix that captures the adjacency structure of the neighborhood graph. 
+PyMC provides this distribution out-of-the-box, which we utilize for spatial random effects \cite{salvatier_probabilistic_2016}.
+
 
 \subsection{Hierarchical Modeling}
 
