@@ -9,6 +9,8 @@
 \usepackage{amsfonts}
 \usepackage{booktabs}
 
+\usepackage{svg}
+
 % space saving
 \usepackage[text={16cm,24cm}]{geometry}
 \usepackage[compact]{titlesec}
@@ -20,11 +22,11 @@
 % https://tex.stackexchange.com/questions/111948/what-is-a-overfull-hbox-9-89561pt-too-wide
 \sloppy
 
-\title{BirdCLEF Birdcall Distribution Maps}
+\title{IYSE6420: BirdCLEF Birdcall Distribution Maps}
 
 %% Authors
 \author{
-    Anthony Miyaguchi \\  \texttt{acmiyaguchi@gatech.edu}
+    Anthony Miyaguchi \texttt{<acmiyaguchi@gatech.edu>}
 }
 
 \begin{document}
@@ -33,7 +35,7 @@
 
 \begin{abstract}
 
-We utilize geo-spatial features of bird call metadata from the BirdCLEF 2022 competition to derive a distribution map for a subset of species in California and the Western United States.
+We utilize geospatial features of bird call metadata from the BirdCLEF 2022 competition to derive a distribution map for a subset of species in California and the Western United States.
 We build several Bayesian models that incorporates species frequency information and remote sensing data from USGS and NASA in a regular lattice built from area-of-interest (AOI) geometries, using both hierarchical modeling to incorporate information across a subset of species and a conditional autoregressive (CAR) distribution for spatial random effects.
 We generate several species distribution maps and make qualitative comparisons against known distribution maps.
 All code and data is available on-request, and may be available publicly on Github/GCP pending permission from course instructors.
@@ -59,15 +61,14 @@ Each species is capped to 500 recordings in the dataset, with frequency of recor
 \subsection{Google Earth Engine}
 
 Google Earth Engine is a cloud-based platform for processing geospatial data \cite{gorelick_google_2017}.
-We use Earth Engine to access remote sensing data from the United States Geological Survey (USGS) and the National Aeronautics and Space Administration (NASA).
-We obtain elevation, temperature, land cover classification, and population density data from various sources hosted on Earth Engine.
+We use remote sensing data from the United States Geological Survey (USGS) and the National Aeronautics and Space Administration (NASA) to obtain elevation, temperature, land cover classification, and population density data from various sources hosted on Earth Engine.
 
 Elevation data is derived from the NASA Shuttle Radar Topography Mission dataset (\texttt{USGS/SRTMGL1\_003}) \cite{nasa_srtmg}.
 Temperature data is derived from the MODIS/Terra Land Surface Temperature/Emissivity dataset (\texttt{MODIS/006/MOD11A1}) \cite{wan_zhengming_mod11a1_2015}.
 Land cover classification data is derived from the MODIS/Terra+Aqua Land Cover Type dataset (\texttt{MODIS/006/MCD12Q1}) \cite{friedl_mark_mcd12q1_2019}.
 Population density data is derived from the Gridded Population of the World, Version 4 dataset (\texttt{CIESIN/GPWv411/GPW\_Population\_Density}) \cite{gpwv4}.
 
-We generate a regular lattice of polygons from area-of-interest (AOI) geometries which are used to generate a dataset for a region at a particular fraction of a degree resolution.
+We generate a regular lattice of polygons from area-of-interest (AOI) geometries which are used to derive a dataset for a region at a fraction of a degree resolution.
 We choose California and the Western United States as our AOI, due to familiarity with the region and diversity of geography and climate.
 The dataset is generated over each polygon in the lattice and computing an aggregate statistic from each data source.
 
@@ -100,6 +101,32 @@ PyMC provides this distribution out-of-the-box, which we utilize for spatial ran
 
 
 \subsection{Hierarchical Modeling}
+
+\begin{figure}[hbt!]
+\centering
+\includesvg{figures/full_model.svg}
+\caption{Varying intercept, varying covariate, CAR model}
+\end{figure}
+
+\section{Data}
+
+\begin{tabular}{lrrrrrr}
+\toprule
+model\_name &  rank &  elpd\_waic &  p\_waic &  elpd\_diff &      se &     dse \\
+\midrule
+varying\_intercept\_varying\_covariate\_car\_model &     0 &    1071.56 &  133.59 &       0.00 &   47.56 &    0.00 \\
+varying\_intercept\_pooled\_covariate\_car\_model  &     1 &    1296.16 &  162.69 &     224.60 &  129.66 &  103.64 \\
+varying\_intercept\_car\_model                   &     2 &    1304.50 &  165.71 &     232.95 &  132.94 &  106.87 \\
+pooled\_intercept\_varying\_covariate\_car\_model  &     3 &    1547.37 &  266.22 &     475.81 &   96.63 &   79.12 \\
+varying\_intercept\_varying\_covariate\_model     &     4 &    2956.88 &  483.70 &    1885.32 &  448.52 &  433.90 \\
+varying\_intercept\_pooled\_covariate\_model      &     5 &    3002.59 &  343.41 &    1931.04 &  508.38 &  492.01 \\
+pooled\_intercept\_varying\_covariate\_model      &     6 &    3252.06 &  537.34 &    2180.50 &  467.44 &  454.44 \\
+pooled\_intercept\_car\_model                    &     7 &    3382.35 &  632.29 &    2310.79 &  429.00 &  414.64 \\
+varying\_intercept\_model                       &     8 &    4027.62 &  117.97 &    2956.06 &  805.71 &  796.46 \\
+pooled\_intercept\_pooled\_covariate\_model       &     9 &    4327.90 &  451.85 &    3256.34 &  862.91 &  853.27 \\
+\bottomrule
+\end{tabular}
+
 
 \section{Analysis}
 
