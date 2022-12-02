@@ -31,7 +31,7 @@ def _coords(prep_df, scaled_data_df):
     return coords
 
 
-def make_random_intercept_model(prep_df, *args, **kwargs):
+def make_varying_intercept_model(prep_df, *args, **kwargs):
     """Intercept-only model"""
     scaled_data_df = _scaled_data(prep_df)
     species_cat = prep_df.primary_label.astype("category")
@@ -49,8 +49,8 @@ def make_random_intercept_model(prep_df, *args, **kwargs):
     return model
 
 
-def make_random_intercept_car_model(prep_df, W, *args, **kwargs):
-    """Model intercept per species and CAR for spatial random effects."""
+def make_varying_intercept_car_model(prep_df, W, *args, **kwargs):
+    """Model intercept per species and CAR for spatial varying effects."""
     scaled_data_df = _scaled_data(prep_df)
     species_cat = prep_df.primary_label.astype("category")
 
@@ -70,7 +70,12 @@ def make_random_intercept_car_model(prep_df, W, *args, **kwargs):
             W=W,
             dims="adj_idx",
         )
-        intercept = pm.Normal("intercept", mu=0, tau=1e-4, dims="species_idx")
+        # hyperpriors for intercept
+        intercept_bar = pm.Normal("intercept_bar", mu=0, sigma=1.5)
+        intercept_sigma = pm.Exponential("intercept_sigma", 1)
+        intercept = pm.Normal(
+            "intercept", mu=intercept_bar, tau=1 / intercept_sigma, dims="species_idx"
+        )
         mu = pm.Deterministic(
             "mu", pm.math.exp(intercept[species_idx] + phi[adj_idx]), dims="obs_idx"
         )
@@ -81,9 +86,8 @@ def make_random_intercept_car_model(prep_df, W, *args, **kwargs):
 
 
 def make_pooled_intercept_car_model(prep_df, W, *args, **kwargs):
-    """Model intercept per species and CAR for spatial random effects."""
+    """Model intercept per species and CAR for spatial varying effects."""
     scaled_data_df = _scaled_data(prep_df)
-    species_cat = prep_df.primary_label.astype("category")
 
     with pm.Model(coords=_coords(prep_df, scaled_data_df)) as model:
         adj_idx = pm.ConstantData("adj_idx", prep_df.index.values, dims="obs_idx")
@@ -108,7 +112,7 @@ def make_pooled_intercept_car_model(prep_df, W, *args, **kwargs):
     return model
 
 
-def make_random_intercept_pooled_covariate_model(prep_df, *args, **kwargs):
+def make_varying_intercept_pooled_covariate_model(prep_df, *args, **kwargs):
     """Model intercept per species and shared covariate"""
     scaled_data_df = _scaled_data(prep_df)
     species_cat = prep_df.primary_label.astype("category")
@@ -121,8 +125,16 @@ def make_random_intercept_pooled_covariate_model(prep_df, *args, **kwargs):
             "X", scaled_data_df.values, dims=("obs_idx", "features_idx")
         )
 
-        intercept = pm.Normal("intercept", mu=0, tau=1e-4, dims="species_idx")
-        betas = pm.Normal("betas", mu=0, tau=1e-4, dims="features_idx")
+        intercept_bar = pm.Normal("intercept_bar", mu=0, sigma=1.5)
+        intercept_sigma = pm.Exponential("intercept_sigma", 1)
+        intercept = pm.Normal(
+            "intercept", mu=intercept_bar, tau=1 / intercept_sigma, dims="species_idx"
+        )
+        betas_bar = pm.Normal("betas_bar", mu=0, sigma=1.5)
+        betas_sigma = pm.Exponential("betas_sigma", 1)
+        betas = pm.Normal(
+            "betas", mu=betas_bar, tau=1 / betas_sigma, dims="features_idx"
+        )
         mu = pm.Deterministic(
             "mu",
             pm.math.exp(intercept[species_idx] + pm.math.sum(X * betas, axis=1)),
@@ -144,7 +156,11 @@ def make_pooled_intercept_pooled_covariate_model(prep_df, *args, **kwargs):
         )
 
         intercept = pm.Normal("intercept", mu=0, tau=1e-4)
-        betas = pm.Normal("betas", mu=0, tau=1e-4, dims="features_idx")
+        betas_bar = pm.Normal("betas_bar", mu=0, sigma=1.5)
+        betas_sigma = pm.Exponential("betas_sigma", 1)
+        betas = pm.Normal(
+            "betas", mu=betas_bar, tau=1 / betas_sigma, dims="features_idx"
+        )
         mu = pm.Deterministic(
             "mu",
             pm.math.exp(intercept + pm.math.sum(X * betas, axis=1)),
@@ -156,7 +172,7 @@ def make_pooled_intercept_pooled_covariate_model(prep_df, *args, **kwargs):
     return model
 
 
-def make_pooled_intercept_random_covariate_model(prep_df, *args, **kwargs):
+def make_pooled_intercept_varying_covariate_model(prep_df, *args, **kwargs):
     """Model intercept per species and shared covariate"""
     scaled_data_df = _scaled_data(prep_df)
     species_cat = prep_df.primary_label.astype("category")
@@ -170,7 +186,14 @@ def make_pooled_intercept_random_covariate_model(prep_df, *args, **kwargs):
         )
 
         intercept = pm.Normal("intercept", mu=0, tau=1e-4)
-        betas = pm.Normal("betas", mu=0, tau=1e-4, dims=("species_idx", "features_idx"))
+        betas_bar = pm.Normal("betas_bar", mu=0, sigma=1.5)
+        betas_sigma = pm.Exponential("betas_sigma", 1)
+        betas = pm.Normal(
+            "betas",
+            mu=betas_bar,
+            tau=1 / betas_sigma,
+            dims=("species_idx", "features_idx"),
+        )
         mu = pm.Deterministic(
             "mu",
             pm.math.exp(intercept + pm.math.sum(X * betas[species_idx], axis=1)),
@@ -182,7 +205,7 @@ def make_pooled_intercept_random_covariate_model(prep_df, *args, **kwargs):
     return model
 
 
-def make_random_intercept_random_covariate_model(prep_df, *args, **kwargs):
+def make_varying_intercept_varying_covariate_model(prep_df, *args, **kwargs):
     """Model intercept per species and shared covariate"""
     scaled_data_df = _scaled_data(prep_df)
     species_cat = prep_df.primary_label.astype("category")
@@ -195,8 +218,19 @@ def make_random_intercept_random_covariate_model(prep_df, *args, **kwargs):
             "X", scaled_data_df.values, dims=("obs_idx", "features_idx")
         )
 
-        intercept = pm.Normal("intercept", mu=0, tau=1e-4, dims="species_idx")
-        betas = pm.Normal("betas", mu=0, tau=1e-4, dims=("species_idx", "features_idx"))
+        intercept_bar = pm.Normal("intercept_bar", mu=0, sigma=1.5)
+        intercept_sigma = pm.Exponential("intercept_sigma", 1)
+        intercept = pm.Normal(
+            "intercept", mu=intercept_bar, tau=1 / intercept_sigma, dims="species_idx"
+        )
+        betas_bar = pm.Normal("betas_bar", mu=0, sigma=1.5)
+        betas_sigma = pm.Exponential("betas_sigma", 1)
+        betas = pm.Normal(
+            "betas",
+            mu=betas_bar,
+            tau=1 / betas_sigma,
+            dims=("species_idx", "features_idx"),
+        )
         mu = pm.Deterministic(
             "mu",
             pm.math.exp(
@@ -210,7 +244,7 @@ def make_random_intercept_random_covariate_model(prep_df, *args, **kwargs):
     return model
 
 
-def make_pooled_intercept_random_covariate_car_model(prep_df, W, *args, **kwargs):
+def make_pooled_intercept_varying_covariate_car_model(prep_df, W, *args, **kwargs):
     scaled_data_df = _scaled_data(prep_df)
     species_cat = prep_df.primary_label.astype("category")
 
@@ -234,7 +268,14 @@ def make_pooled_intercept_random_covariate_car_model(prep_df, W, *args, **kwargs
             dims="adj_idx",
         )
         intercept = pm.Normal("intercept", mu=0, tau=1e-4)
-        betas = pm.Normal("betas", mu=0, tau=1e-4, dims=("species_idx", "features_idx"))
+        betas_bar = pm.Normal("betas_bar", mu=0, sigma=1.5)
+        betas_sigma = pm.Exponential("betas_sigma", 1)
+        betas = pm.Normal(
+            "betas",
+            mu=betas_bar,
+            tau=1 / betas_sigma,
+            dims=("species_idx", "features_idx"),
+        )
         mu = pm.Deterministic(
             "mu",
             pm.math.exp(
@@ -248,7 +289,7 @@ def make_pooled_intercept_random_covariate_car_model(prep_df, W, *args, **kwargs
     return model
 
 
-def make_random_intercept_pooled_covariate_car_model(prep_df, W, *args, **kwargs):
+def make_varying_intercept_pooled_covariate_car_model(prep_df, W, *args, **kwargs):
     scaled_data_df = _scaled_data(prep_df)
     species_cat = prep_df.primary_label.astype("category")
 
@@ -271,12 +312,75 @@ def make_random_intercept_pooled_covariate_car_model(prep_df, W, *args, **kwargs
             W=W,
             dims="adj_idx",
         )
-        intercept = pm.Normal("intercept", mu=0, tau=1e-4, dims="species_idx")
-        betas = pm.Normal("betas", mu=0, tau=1e-4, dims="features_idx")
+
+        intercept_bar = pm.Normal("intercept_bar", mu=0, sigma=1.5)
+        intercept_sigma = pm.Exponential("intercept_sigma", 1)
+        intercept = pm.Normal(
+            "intercept", mu=intercept_bar, tau=1 / intercept_sigma, dims="species_idx"
+        )
+        betas_bar = pm.Normal("betas_bar", mu=0, sigma=1.5)
+        betas_sigma = pm.Exponential("betas_sigma", 1)
+        betas = pm.Normal(
+            "betas",
+            mu=betas_bar,
+            tau=1 / betas_sigma,
+            dims="features_idx",
+        )
         mu = pm.Deterministic(
             "mu",
             pm.math.exp(
                 intercept[species_idx] + pm.math.sum(X * betas, axis=1) + phi[adj_idx]
+            ),
+            dims="obs_idx",
+        )
+        pm.Poisson(
+            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+        )
+    return model
+
+
+def make_varying_intercept_varying_covariate_car_model(prep_df, W, *args, **kwargs):
+    scaled_data_df = _scaled_data(prep_df)
+    species_cat = prep_df.primary_label.astype("category")
+
+    with pm.Model(coords=_coords(prep_df, scaled_data_df)) as model:
+        species_idx = pm.ConstantData(
+            "species_idx", species_cat.cat.codes, dims="obs_idx"
+        )
+        adj_idx = pm.ConstantData("adj_idx", prep_df.index.values, dims="obs_idx")
+        X = pm.ConstantData(
+            "X", scaled_data_df.values, dims=("obs_idx", "features_idx")
+        )
+
+        alpha = pm.Beta("alpha", 5, 1)
+        sigma_phi = pm.Uniform("sigma_phi", 0, 20)
+        phi = pm.CAR(
+            "phi",
+            mu=np.zeros(W.shape[0]),
+            tau=1 / sigma_phi,
+            alpha=alpha,
+            W=W,
+            dims="adj_idx",
+        )
+        intercept_bar = pm.Normal("intercept_bar", mu=0, sigma=1.5)
+        intercept_sigma = pm.Exponential("intercept_sigma", 1)
+        intercept = pm.Normal(
+            "intercept", mu=intercept_bar, tau=1 / intercept_sigma, dims="species_idx"
+        )
+        betas_bar = pm.Normal("betas_bar", mu=0, sigma=1.5)
+        betas_sigma = pm.Exponential("betas_sigma", 1)
+        betas = pm.Normal(
+            "betas",
+            mu=betas_bar,
+            tau=1 / betas_sigma,
+            dims=("species_idx", "features_idx"),
+        )
+        mu = pm.Deterministic(
+            "mu",
+            pm.math.exp(
+                intercept[species_idx]
+                + pm.math.sum(X * betas[species_idx], axis=1)
+                + phi[adj_idx]
             ),
             dims="obs_idx",
         )
