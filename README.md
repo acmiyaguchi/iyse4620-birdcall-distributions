@@ -26,11 +26,17 @@ gcloud storage cp -r data/ gs://iyse6420-birdcall-distribution/
 
 https://www.lfd.uci.edu/~gohlke/pythonlibs/
 
-```
+```bash
 # for windows only
 pip install data/Cartopy-0.20.2-cp310-cp310-win_amd64.whl
 pip install data/Shapely-1.8.2-cp310-cp310-win_amd64.whl
 pip install data/pyproj-3.3.1-cp310-cp310-win_amd64.whl
+```
+
+Convert svg images
+
+```bash
+inkscape full_model.svg --export-type=png --export-filename=full_model.png
 ```
 
 ## datasets
