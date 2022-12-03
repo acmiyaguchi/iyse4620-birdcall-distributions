@@ -57,6 +57,9 @@ def prepare_dataframe(ee_path, train_path, n_species=3):
     prep_df["adjacency_idx"] = prep_df.grid_id.apply(lambda x: mapping.get(x, None))
     prep_df = prep_df.set_index("adjacency_idx").sort_index()
 
+    landcover_cols = [c for c in prep_df.columns if c.startswith("land_cover")]
+    prep_df["sum_land_cover"] = prep_df[landcover_cols].sum(axis="columns")
+
     return prep_df, W
 
 
