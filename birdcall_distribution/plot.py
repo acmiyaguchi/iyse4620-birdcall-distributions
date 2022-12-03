@@ -127,6 +127,70 @@ def plot_species(df, species, prop="y", ax=None, title=None, **kwargs):
     ax.set_title(title)
 
 
+def plot_ppc_species(
+    prep_df,
+    ppc,
+    species,
+    prop="log_pred",
+    ax=None,
+    title=None,
+    show_hist=False,
+    **kwargs,
+):
+    pred_df = prep_df.copy()
+    shape = prep_df.shape
+    pred_df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, shape[0]).mean(
+        axis=0
+    )
+    pred_df["log_pred"] = np.log(pred_df.pred)
+    sub_df = pred_df[prep_df.primary_label == species]
+
+    if show_hist:
+        plt.figure(figsize=(5, 3))
+        plt.hist(sub_df[prop], bins=20)
+        plt.title(f"histogram of {prop} for {species}")
+        plt.show()
+
+    region = pred_df.region.values[0]
+    grid_size = pred_df.grid_size.values[0]
+    grid_meta = get_grid_meta(region, grid_size)
+
+    # plot the posterior predictive
+    plot_grid(
+        grid_meta.geometry,
+        grid_meta.extent,
+        grid_meta.grid,
+        color_callback=partial(dataframe_color_getter, sub_df, "grid_id", prop),
+        vmin=pred_df[prop].min(),
+        vmax=pred_df[prop].max(),
+        draw_gridline=False,
+        figsize=(5, 7),
+        ax=ax,
+        **kwargs,
+    )
+    if not title:
+        title = f"Birdcall Recording Frequency prediction for {species}"
+    if ax is None:
+        ax = plt.gca()
+    ax.set_title(title)
+
+
+def _set_colorbar(fig, vmin, vmax):
+    # https://stackoverflow.com/questions/13784201/how-to-have-one-colorbar-for-all-subplots
+    fig.subplots_adjust(right=0.8)
+    cbar_ax = fig.add_axes([0.83, 0.10, 0.03, 0.8])
+    cbar = fig.colorbar(
+        plt.matplotlib.cm.ScalarMappable(norm=None, cmap=COLORMAP),
+        fraction=0.04,
+        pad=0.04,
+        cax=cbar_ax,
+    )
+    cbar.set_ticks(np.linspace(0, 1, 6))
+    cbar.set_ticklabels(
+        [f"{round(np.interp(x, [0, 1], [vmin, vmax]), 2)}" for x in cbar.get_ticks()]
+    )
+
+
 def plot_species_subplot(
     df, species_list, prop="y", species_mapper={}, subtitle=None, **kwargs
 ):
@@ -137,7 +201,7 @@ def plot_species_subplot(
     axes = axs.flatten()
     for i, species in enumerate(species_list):
         common = species_mapper.get(species)
-        count = df[df.primary_label == species][prop].sum()
+        count = df[df.primary_label == species][prop].sum().astype(int)
         plot_species(
             df,
             species,
@@ -153,57 +217,56 @@ def plot_species_subplot(
 
     # https://stackoverflow.com/questions/8248467/tight-layout-doesnt-take-into-account-figure-suptitle
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    _set_colorbar(fig, df[prop].min(), df[prop].max())
 
-    vmin = df[prop].min()
-    vmax = df[prop].max()
-
-    # https://stackoverflow.com/questions/13784201/how-to-have-one-colorbar-for-all-subplots
-    fig.subplots_adjust(right=0.8)
-    cbar_ax = fig.add_axes([0.83, 0.10, 0.03, 0.8])
-    cbar = fig.colorbar(
-        plt.matplotlib.cm.ScalarMappable(norm=None, cmap=COLORMAP),
-        fraction=0.04,
-        pad=0.04,
-        cax=cbar_ax,
-    )
-    cbar.set_ticks(np.linspace(0, 1, 6))
-    cbar.set_ticklabels(
-        [f"{round(np.interp(x, [0, 1], [vmin, vmax]), 2)}" for x in cbar.get_ticks()]
-    )
     title = "Birdcall Recording Frequency"
     if subtitle:
         title += f" ({subtitle})"
     fig.suptitle(title)
 
 
-def plot_ppc_species(prep_df, ppc, species, prop="log_pred", ax=None):
-    pred_df = prep_df.copy()
-    shape = prep_df.shape
-    pred_df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, shape[0]).mean(
-        axis=0
+def plot_ppc_species_subplot(
+    df,
+    ppc,
+    species_list,
+    prop="log_pred",
+    species_mapper={},
+    subtitle=None,
+    **kwargs,
+):
+
+    df = df.copy()
+    shape = df.shape
+    df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, shape[0]).mean(axis=0)
+    df["log_pred"] = np.log(df.pred)
+
+    # create a subplot in a 2x2 grid
+    fig, axs = plt.subplots(
+        2, 2, figsize=(9, 7), subplot_kw={"projection": ccrs.PlateCarree()}
     )
-    pred_df["log_pred"] = np.log(pred_df.pred)
-    pred_df = pred_df[prep_df.primary_label == species]
+    axes = axs.flatten()
+    for i, species in enumerate(species_list):
+        common = species_mapper.get(species)
+        count = df[df.primary_label == species][prop].sum().astype(int)
+        plot_ppc_species(
+            df,
+            ppc,
+            species,
+            ax=axes[i],
+            colorbar=False,
+            title=(
+                f"{common} ({species}, n={count})"
+                if common
+                else f"{species}, n={count}"
+            ),
+            **kwargs,
+        )
 
-    plt.figure(figsize=(5, 3))
-    plt.hist(pred_df[prop], bins=20)
-    plt.title(f"histogram of {prop} for {species}")
-    plt.show()
+    # https://stackoverflow.com/questions/8248467/tight-layout-doesnt-take-into-account-figure-suptitle
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    _set_colorbar(fig, df[prop].min(), df[prop].max())
 
-    region = pred_df.region.values[0]
-    grid_size = pred_df.grid_size.values[0]
-    grid_meta = get_grid_meta(region, grid_size)
-
-    # plot the posterior predictive
-    plot_grid(
-        grid_meta.geometry,
-        grid_meta.extent,
-        grid_meta.grid,
-        color_callback=partial(dataframe_color_getter, pred_df, "grid_id", prop),
-        vmin=pred_df[prop].min(),
-        vmax=pred_df[prop].max(),
-        draw_gridline=False,
-        figsize=(5, 7),
-        ax=ax,
-    )
-    plt.title(f"Birdcall Recording Frequency prediction for {species}")
+    title = "Birdcall Recording Frequency Predictions"
+    if subtitle:
+        title += f" ({subtitle})"
+    fig.suptitle(title)
