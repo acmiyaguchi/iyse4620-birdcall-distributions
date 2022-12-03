@@ -28,9 +28,9 @@ https://www.lfd.uci.edu/~gohlke/pythonlibs/
 
 ```bash
 # for windows only
-pip install data/Cartopy-0.20.2-cp310-cp310-win_amd64.whl
-pip install data/Shapely-1.8.2-cp310-cp310-win_amd64.whl
-pip install data/pyproj-3.3.1-cp310-cp310-win_amd64.whl
+pip install data/pyproj-3.3.1-cp310-cp310-win_amd64.whl --force-reinstall
+pip install data/Shapely-1.8.2-cp310-cp310-win_amd64.whl --force-reinstall
+pip install data/Cartopy-0.20.2-cp310-cp310-win_amd64.whl --force-reinstall
 ```
 
 Convert svg images

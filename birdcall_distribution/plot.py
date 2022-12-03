@@ -7,12 +7,14 @@ import numpy as np
 
 from .geo import get_grid_meta
 
+COLORMAP = "viridis"
+
 
 def dataframe_color_getter(df, key_col, value_col, key):
     property = df[value_col]
     vmin = property.min()
     vmax = property.max()
-    color_getter = lambda x: plt.get_cmap("viridis")(np.interp(x, [vmin, vmax], [0, 1]))
+    color_getter = lambda x: plt.get_cmap(COLORMAP)(np.interp(x, [vmin, vmax], [0, 1]))
     try:
         return color_getter(df[df[key_col] == key][value_col].values[0])
     except IndexError:
@@ -49,13 +51,19 @@ def plot_grid(
     vmax=None,
     draw_gridline=True,
     figsize=(12, 7),
+    ax=None,
+    projection=None,
+    colorbar=True,
 ):
     xmin, xmax, ymin, ymax = map_dims
 
     # plot map with lattice of polygons
-    fig = plt.figure(figsize=figsize)
-    projection = ccrs.PlateCarree()
-    ax = plt.axes(projection=projection)
+    if not projection:
+        projection = ccrs.PlateCarree()
+    if ax is None:
+        plt.figure(figsize=figsize)
+        ax = plt.axes(projection=projection)
+
     ax.set_xlim([xmin, xmax])
     ax.set_ylim([ymin, ymax])
     if draw_gridline:
@@ -74,12 +82,13 @@ def plot_grid(
         facecolor=(1, 1, 1, 0),
     )
 
-    if color_callback:
+    if color_callback and colorbar:
         # some magic numbers for scaling: https://stackoverflow.com/a/26720422
-        cbar = fig.colorbar(
-            plt.matplotlib.cm.ScalarMappable(norm=None, cmap="viridis"),
+        cbar = plt.colorbar(
+            plt.matplotlib.cm.ScalarMappable(norm=None, cmap=COLORMAP),
             fraction=0.04,
             pad=0.04,
+            ax=ax,
         )
         cbar.set_ticks(np.linspace(0, 1, 6))
         cbar.set_ticklabels(
@@ -91,28 +100,83 @@ def plot_grid(
     ax.stock_img()
 
 
-def plot_species(df, species, prop="y"):
+def plot_species(df, species, prop="y", ax=None, title=None, **kwargs):
     """Used to plot the distribution of a species in a dataset"""
     sub_df = df[df.primary_label == species]
     region = sub_df.region.values[0]
     grid_size = sub_df.grid_size.values[0]
     grid_meta = get_grid_meta(region, grid_size)
+
+    # note that we use a shared colorbar
     plot_grid(
         grid_meta.geometry,
         grid_meta.extent,
         grid_meta.grid,
         color_callback=partial(dataframe_color_getter, sub_df, "grid_id", prop),
-        vmin=sub_df[prop].min(),
-        vmax=sub_df[prop].max(),
+        vmin=df[prop].min(),
+        vmax=df[prop].max(),
         draw_gridline=False,
         figsize=(5, 7),
+        ax=ax,
+        **kwargs,
     )
+    if not title:
+        title = f"Birdcall Recording Frequency for {species}"
+    if ax is None:
+        ax = plt.gca()
+    ax.set_title(title)
 
-    plt.title(f"Birdcall Recording Frequency for {species}")
-    plt.show()
+
+def plot_species_subplot(
+    df, species_list, prop="y", species_mapper={}, subtitle=None, **kwargs
+):
+    # create a subplot in a 2x2 grid
+    fig, axs = plt.subplots(
+        2, 2, figsize=(9, 7), subplot_kw={"projection": ccrs.PlateCarree()}
+    )
+    axes = axs.flatten()
+    for i, species in enumerate(species_list):
+        common = species_mapper.get(species)
+        count = df[df.primary_label == species][prop].sum()
+        plot_species(
+            df,
+            species,
+            ax=axes[i],
+            colorbar=False,
+            title=(
+                f"{common} ({species}, n={count})"
+                if common
+                else f"{species}, n={count}"
+            ),
+            **kwargs,
+        )
+
+    # https://stackoverflow.com/questions/8248467/tight-layout-doesnt-take-into-account-figure-suptitle
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+    vmin = df[prop].min()
+    vmax = df[prop].max()
+
+    # https://stackoverflow.com/questions/13784201/how-to-have-one-colorbar-for-all-subplots
+    fig.subplots_adjust(right=0.8)
+    cbar_ax = fig.add_axes([0.83, 0.10, 0.03, 0.8])
+    cbar = fig.colorbar(
+        plt.matplotlib.cm.ScalarMappable(norm=None, cmap=COLORMAP),
+        fraction=0.04,
+        pad=0.04,
+        cax=cbar_ax,
+    )
+    cbar.set_ticks(np.linspace(0, 1, 6))
+    cbar.set_ticklabels(
+        [f"{round(np.interp(x, [0, 1], [vmin, vmax]), 2)}" for x in cbar.get_ticks()]
+    )
+    title = "Birdcall Recording Frequency"
+    if subtitle:
+        title += f" ({subtitle})"
+    fig.suptitle(title)
 
 
-def plot_ppc_species(prep_df, ppc, species, prop="log_pred"):
+def plot_ppc_species(prep_df, ppc, species, prop="log_pred", ax=None):
     pred_df = prep_df.copy()
     shape = prep_df.shape
     pred_df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, shape[0]).mean(
@@ -140,6 +204,6 @@ def plot_ppc_species(prep_df, ppc, species, prop="log_pred"):
         vmax=pred_df[prop].max(),
         draw_gridline=False,
         figsize=(5, 7),
+        ax=ax,
     )
     plt.title(f"Birdcall Recording Frequency prediction for {species}")
-    plt.show()

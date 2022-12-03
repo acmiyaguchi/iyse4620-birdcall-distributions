@@ -7,13 +7,11 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-matplotlib = "^3.5.3"
+# https://github.com/SciTools/cartopy/issues/2086
+matplotlib = "3.5.2"
 pandas = "^1.5.1"
 pymc = "^4.3.0"
 arviz = "*"
-# NOTE: this does not install on windows, so run on a different machine if you
-# need to download any geometries
-Cartopy = { version = "^0.21.0", optional = true }
 earthengine-api = "^0.1.330"
 tqdm = "^4.64.1"
 pyarrow = "^10.0.0"
@@ -23,9 +21,15 @@ jax = { version = "^0.3.24", optional = true }
 jaxlib = { version = "^0.3.24+cuda11.cudnn82", optional = true }
 numpyro = { version = "^0.10.1", optional = true }
 
+# NOTE: we have to manually add the paths for the wheels; this is very hacky and
+# I'm unsure if this will install properly on linux anymore
+Cartopy = { version = "0.20.2" }
+cartopy = { path = "data/Cartopy-0.20.2-cp310-cp310-win_amd64.whl" }
+shapely = { path = "data/Shapely-1.8.2-cp310-cp310-win_amd64.whl" }
+pyproj = { path = "data/pyproj-3.3.1-cp310-cp310-win_amd64.whl" }
+
 [tool.poetry.extras]
 gpu = ["jax", "jaxlib", "numpyro"]
-cartopy = ["Cartopy"]
 
 [tool.poetry.dev-dependencies]
 jupyterlab = "^3.4.5"
