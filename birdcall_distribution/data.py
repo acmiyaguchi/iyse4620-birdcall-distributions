@@ -33,15 +33,16 @@ def prepare_dataframe(ee_path, train_path, n_species=3):
     df["adjacency_idx"] = df.grid_id.apply(lambda x: mapping.get(x, None))
 
     # now modify the species list so we only keep the top n
-    top_n = (
-        df[["primary_label"]]
-        .groupby("primary_label")
-        .value_counts()
-        .sort_values(ascending=False)[:n_species]
-    )
-    df["primary_label"] = df.primary_label.apply(
-        lambda x: x if x in top_n.index else "other"
-    )
+    if n_species:
+        top_n = (
+            df[["primary_label"]]
+            .groupby("primary_label")
+            .value_counts()
+            .sort_values(ascending=False)[:n_species]
+        )
+        df["primary_label"] = df.primary_label.apply(
+            lambda x: x if x in top_n.index else "other"
+        )
 
     # count number of observed calls per adjacency index, and join against the ee variables
     group_cols = ["primary_label", "grid_id"]
