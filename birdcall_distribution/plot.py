@@ -192,11 +192,11 @@ def _set_colorbar(fig, vmin, vmax):
 
 
 def plot_species_subplot(
-    df, species_list, prop="y", species_mapper={}, subtitle=None, **kwargs
+    df, species_list, prop="y", species_mapper={}, subtitle=None, shape=(2, 2), **kwargs
 ):
     # create a subplot in a 2x2 grid
     fig, axs = plt.subplots(
-        2, 2, figsize=(9, 7), subplot_kw={"projection": ccrs.PlateCarree()}
+        *shape, figsize=(9, 7), subplot_kw={"projection": ccrs.PlateCarree()}
     )
     axes = axs.flatten()
     for i, species in enumerate(species_list):
@@ -232,17 +232,16 @@ def plot_ppc_species_subplot(
     prop="log_pred",
     species_mapper={},
     subtitle=None,
+    shape=(2, 2),
     **kwargs,
 ):
 
     df = df.copy()
-    shape = df.shape
-    df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, shape[0]).mean(axis=0)
+    df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, df.shape[0]).mean(axis=0)
     df["log_pred"] = np.log(df.pred)
 
-    # create a subplot in a 2x2 grid
     fig, axs = plt.subplots(
-        2, 2, figsize=(9, 7), subplot_kw={"projection": ccrs.PlateCarree()}
+        *shape, figsize=(9, 7), subplot_kw={"projection": ccrs.PlateCarree()}
     )
     axes = axs.flatten()
     for i, species in enumerate(species_list):
