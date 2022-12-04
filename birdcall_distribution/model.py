@@ -4,7 +4,7 @@ import pymc as pm
 from birdcall_distribution.data import prepare_scaled_data
 
 
-def _scaled_data(prep_df):
+def _scaled_data_old(prep_df):
     landcover_cols = [f"land_cover_{i:02d}" for i in [7, 8, 9, 10, 16]]
     data_cols = [
         "population_density",
@@ -17,6 +17,12 @@ def _scaled_data(prep_df):
         prep_df, data_cols, ["population_density"] + landcover_cols, intercept=False
     )
     return scaled_data_df
+
+
+def _scaled_data(prep_df):
+    covariate_cols = prep_df.columns[5:-1]
+    log_cols = [c for c in covariate_cols if "population" in c or "land_cover" in c]
+    return prepare_scaled_data(prep_df, covariate_cols, log_cols, intercept=False)
 
 
 def _coords(prep_df, scaled_data_df):
