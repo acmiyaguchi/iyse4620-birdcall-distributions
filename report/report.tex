@@ -9,8 +9,10 @@
 \usepackage{amsfonts}
 \usepackage{booktabs}
 
-% https://tex.stackexchange.com/questions/8625/force-figure-placement-in-text
 \usepackage{parskip}
+
+% https://tex.stackexchange.com/questions/8625/force-figure-placement-in-text
+\usepackage{float}
 
 % space saving
 \usepackage[text={16cm,24cm}]{geometry}
@@ -37,43 +39,44 @@
 \begin{abstract}
 
 We utilize geospatial features of bird call metadata from the BirdCLEF 2022 competition to derive a distribution map for a subset of species in California and the Western United States.
-We build several Bayesian models that incorporates species frequency information and remote sensing data from USGS and NASA in a regular lattice built from area-of-interest (AOI) geometries, using both hierarchical modeling to incorporate information across a subset of species and a conditional autoregressive (CAR) distribution for spatial random effects.
+We build several Bayesian models incorporating species frequency information and remote sensing data from USGS and NASA in a regular lattice built from area-of-interest (AOI) geometries. 
+We use hierarchical modeling to incorporate information across a subset of species and a conditional autoregressive (CAR) distribution for spatial random effects.
 We generate several species distribution maps and make qualitative comparisons against known distribution maps.
-All code and data is available on-request, and may be available publicly on Github/GCP pending permission from course instructors.
+All code and data are available on request and may be available publicly on GitHub/GCP, pending permission from course instructors.
 
 \end{abstract}
 
 \section{Introduction}
 
-We are interested in whether we can produce and analyze species distribution map using Bayesian methods.
+We are interested in whether we can produce and analyze species distribution maps using Bayesian methods.
 
-The BirdCLEF Challenge is a year competition held as part of the Conference and Labs of the Evaluation Forum.
+The BirdCLEF Challenge is a yearly competition held as part of the Conference and Labs of the Evaluation Forum.
 The purpose of the challenge is to classify bird call segments and species from soundscapes captured from audio recording devices deployed in the fields.
-The competition hosts provide a training dataset derived from xeno-canto, a crowd-sourced platform for sharing user-generated recordings of bird calls from around the world.
+The competition hosts provide a training dataset derived from xeno-canto, a crowd-sourced platform for sharing user-generated recordings of bird calls worldwide.
 
 \section{Dataset}
 \subsection{BirdCLEF 2022 Training Metadata}
 
 The BirdCLEF 2022 competition provides over 14,800 recordings from 152 species \cite{kahl2022overview}.
 We are interested in the spatial features from the recording metadata, which are the latitude and longitude of the recording.
-The recordings in the competition dataset are drawn from the xeno-canto library, but it does not reflect the entirety of the library.
-Each species is capped to 500 recordings in the dataset, with frequency of recordings generally correlated with their rarity in nature and population density among other factors.
+The competition draws recordings from the xeno-canto library, but it does not reflect the entirety of the library.
+Each species is capped at 500 recordings in the dataset, with the frequency of recordings generally correlated with their rarity in nature and population density, among other factors.
 
 \subsection{Google Earth Engine}
 
 Google Earth Engine is a cloud-based platform for processing geospatial data \cite{gorelick_google_2017}.
 We use remote sensing data from the United States Geological Survey (USGS) and the National Aeronautics and Space Administration (NASA) to obtain elevation, temperature, land cover classification, and population density data from various sources hosted on Earth Engine.
 
-Elevation data is derived from the NASA Shuttle Radar Topography Mission dataset (\texttt{USGS/SRTMGL1\_003}) \cite{nasa_srtmg}.
-Temperature data is derived from the MODIS/Terra Land Surface Temperature/Emissivity dataset (\texttt{MODIS/006/MOD11A1}) \cite{wan_zhengming_mod11a1_2015}.
-Land cover classification data is derived from the MODIS/Terra+Aqua Land Cover Type dataset (\texttt{MODIS/006/MCD12Q1}) \cite{friedl_mark_mcd12q1_2019}.
-Population density data is derived from the Gridded Population of the World, Version 4 dataset (\texttt{CIESIN/GPWv411/GPW\_Population\_Density}) \cite{gpwv4}.
+The NASA Shuttle Radar Topography Mission dataset (\texttt{USGS/SRTMGL1\_003}) \cite{nasa_srtmg} provides elevation data.
+The TMODIS/Terra Land Surface Temperature/Emissivity dataset (\texttt{MODIS/006/MOD11A1}) \cite{wan_zhengming_mod11a1_2015} provides temperature data.
+The MODIS/Terra+Aqua Land Cover Type dataset (\texttt{MODIS/006/MCD12Q1}) \cite{friedl_mark_mcd12q1_2019} provides land cover classification statistics.
+The Gridded Population of the World, Version 4 dataset (\texttt{CIESIN/GPWv411/GPW\_Population\_Density}) \cite{gpwv4} provides population density data.
 
-We generate a regular lattice of polygons from area-of-interest (AOI) geometries which are used to derive a dataset for a region at a fraction of a degree resolution.
-We choose California and the Western United States as our AOI, due to familiarity with the region and diversity of geography and climate.
-The dataset is generated over each polygon in the lattice and computing an aggregate statistic from each data source.
+We generate a regular lattice of polygons from area-of-interest (AOI) geometries that derive a dataset for a region at a fraction of a degree resolution.
+We chose California and the Western United States as our AOI due to familiarity with the region and the diversity of geography and climate.
+The dataset is generated over each polygon in the lattice, computing an aggregate statistic from each data source.
 
-\section{Methodology}
+\section{Data and Analysis}
 
 \subsection{Conditional Autoregressive Distribution}
 
@@ -100,45 +103,29 @@ where
 This is a special form of the multivariate normal with with a covariance matrix that captures the adjacency structure of the neighborhood graph. 
 PyMC provides this distribution out-of-the-box, which we utilize for spatial random effects \cite{salvatier_probabilistic_2016}.
 
-
-\subsection{Hierarchical Modeling}
-
-We try out a variety of Poisson Generalized Linear Models (GLMs) for developing our distribution map.
-There are three main components to these models: an intercept term, a feature term, and a random spatial effects term.
-We take advantage of heirachical and multi-level modeling techniques to both pool (or share) and vary information across observations, species, and geographical grid indices.
-
-TODO: write out three models
-
-\begin{figure}[hbt!]
-\centering
-\includegraphics[width=\textwidth]{report/figures/full_model.png}
-\caption{Varying intercept, varying covariate, CAR model}
-\end{figure}
-
-We compare the models using the widely applicable information criterion (WAIC) on a deviance scale to choose our final model.
-These models are discussed in more detail during model selection \ref{model_selection}.
-
-\section{Data and Analysis}
-
 \subsection{Stochastic Search Variable Selection}
 
 There are a total of 27 features that are available for modeling.
 Many of these features, such as land cover classification, may have a significant degree of skewness affecting the fitted model.
 We use a stochastic search variable selection (SSVS) to inform our choice of feature transformation.
-In our first model, we lkj
 
-\begin{figure}[hbt!]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.5\textwidth]{report/figures/svss_model.png}
 \end{figure}
 
+We fit a Poisson GLM to the Western US dataset where $\beta$ terms are a deterministic function $\delta$ representing the binary likelihood that a co-variate is included in the model and $\alpha$ representing the strength of the co-variate in the regression.
+In our first model, we include all of the raw (or non-transformed) features and concatenate it with the log-scaled features of population density and land cover classification.
+We do not scale elevation and temperature because these features are not heavy tailed.
+
 \begin{figure}[hbt!]
 \centering
-\includegraphics[width=\textwidth]{report/figures/svss_model.png}
+\includegraphics[width=0.6\textwidth]{report/figures/svss_log_vs_nonlog_features.png}
+\caption{A comparison of non-transformed and transformed features.}
+\label{fig:svss_log_vs_nonlog}
 \end{figure}
 
-
-\begin{figure}[hbt!]
+\begin{figure}[H]
 \centering
 \begin{tabular}{llr}
 \toprule
@@ -151,11 +138,16 @@ In our first model, we lkj
 4 &  000011010000000000000000000110011001111100000 &     0.000250 \\
 \bottomrule
 \end{tabular}
-\caption{Top models with Poisson GLM with unscaled and log-scaled covariates.}
+\caption{Top models with Poisson GLM with non-transformed and log-scaled co-variates. Each string represents a binary mask for whether a feature is included in a model. The first 27 positions are non-transformed, while the last 18 are log-transformed.}
+\label{table:svss_log_vs_nonlog_models}
 \end{figure}
 
+We observe in figure \ref{fig:svss_log_vs_nonlog} that mean values of $\delta$ are larger, and therefore more likely to be included in a model.
+We count the instances of each possible model and find the most likely models supported by the data.
+In table \ref{table:svss_log_vs_nonlog_models}, we find that the SSVS procedure favors log-scaled land cover classification features over the non-transformed features.
+This corroborates the comparison of $\delta$ means in figure \ref{fig:svss_log_vs_nonlog}.
 
-\begin{figure}[hbt!]
+\begin{figure}[H]
 \centering
 \begin{tabular}{lrrrrl}
 \toprule
@@ -191,9 +183,10 @@ delta[26] &  0.972 &  0.165 &     1.0 &      1.0 &       land\_cover\_17 \\
 \bottomrule
 \end{tabular}
 \caption{Probability that a feature is included in a model via SSVS. We note that population density and land cover classification features are log-scaled.}
+\label{table:delta_values}
 \end{figure}
 
-\begin{figure}[hbt!]
+\begin{figure}[H]
 \centering
 \begin{tabular}{llr}
 \toprule
@@ -206,47 +199,106 @@ delta[26] &  0.972 &  0.165 &     1.0 &      1.0 &       land\_cover\_17 \\
 4 &  111111111110111111111111111 &     0.008563 \\
 \bottomrule
 \end{tabular}
-\caption{Top models with Poisson GLM with unscaled elevation and temperature covariates, and log-scaled population density and land cover classification covariates.}
+\caption{Top models with Poisson GLM with non-transformed elevation and temperature features, and log-scaled population density and land cover classification features.}
+\label{table:svss_model}
 \end{figure}
+
+We provide the full summary of $\delta$ posteriors in table \ref{table:delta_values}.
+We also provide the most likely models in table \ref{table:svss_model}.
+We choose the set of non-transformed elevation and temperature features with log-scaled population density and land cover classification features for our final model. 
 
 \subsection{Model Selection}
 \label{model_selection}
 
-\begin{figure}[ht!]
+We try out a variety of Poisson Generalized Linear Models (GLMs) for developing our distribution map.
+There are three main components to these models: an intercept term, a feature term, and a random spatial effects term.
+We take advantage of hierarchical and multi-level modeling techniques to both pool and vary information across observations, species, and geographical grid indices.
+
+TODO: write out three models
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report/figures/full_model.png}
+\caption{Varying intercept, varying covariate, CAR model}
+\end{figure}
+
+We compare our models using the widely applicable information criterion (WAIC) on a deviance scale in table \ref{table:waic_comparison}.
+We choose the model with the smallest deviance to impute empty cells.
+The best model according to the ranking is the varying intercept, varying slope, and CAR model.
+
+\begin{figure}[H]
 \centering
 \begin{tabular}{lrrrrrr}
 \toprule
 model\_name &  rank &  elpd\_waic &  p\_waic &  elpd\_diff &      se &     dse \\
 \midrule
-varying\_intercept\_varying\_covariate\_car\_model &     0 &     967.05 &  108.07 &       0.00 &   29.64 &    0.00 \\
-pooled\_intercept\_varying\_covariate\_car\_model  &     1 &    1237.93 &  198.19 &     270.88 &   54.20 &   44.13 \\
-varying\_intercept\_pooled\_covariate\_car\_model  &     2 &    1291.85 &  160.71 &     324.80 &  129.09 &  118.68 \\
+varying\_intercept\_varying\_slope\_car\_model &     0 &     967.05 &  108.07 &       0.00 &   29.64 &    0.00 \\
+pooled\_intercept\_varying\_slope\_car\_model  &     1 &    1237.93 &  198.19 &     270.88 &   54.20 &   44.13 \\
+varying\_intercept\_pooled\_slope\_car\_model  &     2 &    1291.85 &  160.71 &     324.80 &  129.09 &  118.68 \\
 varying\_intercept\_car\_model                   &     3 &    1296.86 &  163.01 &     329.81 &  129.58 &  119.23 \\
-varying\_intercept\_varying\_covariate\_model     &     4 &    1748.39 &  307.34 &     781.34 &  155.76 &  149.82 \\
-pooled\_intercept\_varying\_covariate\_model      &     5 &    1986.66 &  376.32 &    1019.61 &  182.03 &  175.32 \\
-varying\_intercept\_pooled\_covariate\_model      &     6 &    2094.71 &  292.58 &    1127.66 &  270.45 &  261.44 \\
+varying\_intercept\_varying\_slope\_model     &     4 &    1748.39 &  307.34 &     781.34 &  155.76 &  149.82 \\
+pooled\_intercept\_varying\_slope\_model      &     5 &    1986.66 &  376.32 &    1019.61 &  182.03 &  175.32 \\
+varying\_intercept\_pooled\_slope\_model      &     6 &    2094.71 &  292.58 &    1127.66 &  270.45 &  261.44 \\
 pooled\_intercept\_car\_model                    &     7 &    3384.61 &  634.20 &    2417.56 &  430.55 &  418.98 \\
-pooled\_intercept\_pooled\_covariate\_model       &     8 &    3896.91 &  631.80 &    2929.86 &  536.62 &  526.20 \\
+pooled\_intercept\_pooled\_slope\_model       &     8 &    3896.91 &  631.80 &    2929.86 &  536.62 &  526.20 \\
 varying\_intercept\_model                       &     9 &    4021.92 &  115.95 &    3054.87 &  799.54 &  792.66 \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of models using WAIC.}
+\caption{Comparison of models using WAIC on a deviance scale. Lower is better.}
+\label{table:waic_comparison}
 \end{figure}
 
 \subsection{Imputation and Prediction}
 
-\begin{figure}[ht!]
+We fit our best model to the data and impute all empty cells in the Western US (2-degree resolution) dataset.
+We prepare the dataset by grouping birdcall recording locations into their bounding cells and primary species labels.
+To avoid excess computation and sparsity, we choose a subset of bird species and set a default category of "other".
+
+We model using two variations of the prepared dataset.
+In figure \ref{fig:map_4}, we choose the top 3 species and impute the rest of the missing cells.
+We note that this results in a total of $211/384$ or 55\% of entries that need to be imputed.
+Sampling from the posterior takes 7 minutes and 40 seconds with 16 cores for 56000 samples.
+The second model uses the top 15 species to generate the dataset, which has greater sparsity with $1178/1536$ or 77\% of entries that need to be imputed.
+With greater sparsity comes higher computational costs, with the larger dataset and model taking 37 minutes and 44 seconds to sample.
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{report/figures/western_us_raw_4.png}
 \includegraphics[width=0.8\textwidth]{report/figures/western_us_predict_4.png}
+\caption{Frequency maps of the 15 most frequent species.}
+\label{fig:map_4}
 \end{figure}
 
-\begin{figure}[ht!]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{report/figures/western_us_raw_16.png}
 \includegraphics[width=0.8\textwidth]{report/figures/western_us_predict_16.png}
+\label{fig:map_16}
+\caption{Frequency maps of the 15 most frequent species.}
 \end{figure}
 
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+index &   mean &     sd &  hdi\_3\% &  hdi\_97\% \\
+\midrule
+betas[belkin1, landcover\_cropland/natural\_veget... &  0.322 &  0.158 &   0.018 &    0.611 \\
+betas[gamqua, landcover\_closed\_shrublands]         & -0.260 &  0.133 &  -0.508 &   -0.008 \\
+betas[other, elevation\_p5]                         & -0.278 &  0.149 &  -0.560 &   -0.002 \\
+betas[other, landcover\_deciduous\_broadleaf\_forest] & -0.206 &  0.103 &  -0.401 &   -0.015 \\
+betas[other, landcover\_mixed\_forests]              & -0.338 &  0.139 &  -0.596 &   -0.072 \\
+betas[other, landcover\_urban\_and\_built-up]         &  0.543 &  0.153 &   0.249 &    0.827 \\
+betas[snogoo, landcover\_closed\_shrublands]         &  0.336 &  0.168 &   0.017 &    0.648 \\
+betas[snogoo, landcover\_barren\_or\_sparsely\_vege... &  0.358 &  0.164 &   0.052 &    0.669 \\
+betas[snogoo, landcover\_water\_bodies]              &  0.390 &  0.176 &   0.060 &    0.727 \\
+betas[wesmea, landcover\_croplands]                 &  0.292 &  0.115 &   0.077 &    0.511 \\
+\bottomrule
+\end{tabular}
+\caption{Covariate slopes from the top 15 species that are significant given a 94\% HDI. belkin1 is the Belted Kingfisher, snogoo the Snow Goose, and wesmea the Western Meadowlark.}
+\label{table:significance}
+\end{figure}
 
 \section{Discussion}
 
