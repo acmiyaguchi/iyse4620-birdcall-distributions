@@ -103,15 +103,39 @@ PyMC provides this distribution out-of-the-box, which we utilize for spatial ran
 
 \subsection{Hierarchical Modeling}
 
+We try out a variety of Poisson Generalized Linear Models (GLMs) for developing our distribution map.
+There are three main components to these models: an intercept term, a feature term, and a random spatial effects term.
+We take advantage of heirachical and multi-level modeling techniques to both pool (or share) and vary information across observations, species, and geographical grid indices.
+
+TODO: write out three models
+
 \begin{figure}[hbt!]
 \centering
 \includegraphics[width=\textwidth]{report/figures/full_model.png}
 \caption{Varying intercept, varying covariate, CAR model}
 \end{figure}
 
-\section{Data}
+We compare the models using the widely applicable information criterion (WAIC) on a deviance scale to choose our final model.
+These models are discussed in more detail during model selection \ref{model_selection}.
+
+\section{Data and Analysis}
 
 \subsection{Stochastic Search Variable Selection}
+
+There are a total of 27 features that are available for modeling.
+Many of these features, such as land cover classification, may have a significant degree of skewness affecting the fitted model.
+We use a stochastic search variable selection (SSVS) to inform our choice of feature transformation.
+In our first model, we lkj
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.5\textwidth]{report/figures/svss_model.png}
+\end{figure}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=\textwidth]{report/figures/svss_model.png}
+\end{figure}
 
 
 \begin{figure}[hbt!]
@@ -186,8 +210,9 @@ delta[26] &  0.972 &  0.165 &     1.0 &      1.0 &       land\_cover\_17 \\
 \end{figure}
 
 \subsection{Model Selection}
+\label{model_selection}
 
-\begin{figure}[hbt!]
+\begin{figure}[ht!]
 \centering
 \begin{tabular}{lrrrrrr}
 \toprule
@@ -208,13 +233,26 @@ varying\_intercept\_model                       &     9 &    4021.92 &  115.95 &
 \caption{Comparison of models using WAIC.}
 \end{figure}
 
-\section{Analysis}
+\subsection{Imputation and Prediction}
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\textwidth]{report/figures/western_us_raw_4.png}
+\includegraphics[width=0.8\textwidth]{report/figures/western_us_predict_4.png}
+\end{figure}
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\textwidth]{report/figures/western_us_raw_16.png}
+\includegraphics[width=0.8\textwidth]{report/figures/western_us_predict_16.png}
+\end{figure}
+
+
+\section{Discussion}
 
 - Spatial random effects as a form of local smoothing
 - Hierarchical modeling as a form of incorporating information across species
 - Missing data imputation with distributional assumptions
-
-\section{Discussion}
 
 There are several design choices in the structure of the data and the models that have been left unexplored. One such example is the difference 
 
