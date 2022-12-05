@@ -38,20 +38,22 @@
 
 \begin{abstract}
 
-We utilize geospatial features of bird call metadata from the BirdCLEF 2022 competition to derive a distribution map for a subset of species in California and the Western United States.
+We utilize geospatial features of bird call metadata from the BirdCLEF 2022 competition to derive a distribution map for a subset of species in the Western United States.
 We build several Bayesian models incorporating species frequency information and remote sensing data from USGS and NASA in a regular lattice built from area-of-interest (AOI) geometries. 
 We use hierarchical modeling to incorporate information across a subset of species and a conditional autoregressive (CAR) distribution for spatial random effects and generate several species distribution maps.
-All code and data are available on request and may be available publicly on GitHub/GCP, pending permission from course instructors.
+All code and data are available on request and may be available publicly on GitHub/GCP, pending permission from course instructors \footnote{GitHub source \url{https://github.com/acmiyaguchi/iyse4620-birdcall-distributions}.}.
 
 \end{abstract}
+
 
 \section{Introduction}
 
 We are interested in whether we can produce and analyze species distribution maps using Bayesian methods.
-
 The BirdCLEF Challenge is a yearly competition held as part of the Conference and Labs of the Evaluation Forum.
 The purpose of the challenge is to classify bird call segments and species from soundscapes captured from audio recording devices deployed in the fields.
 The competition hosts provide a training dataset derived from xeno-canto, a crowd-sourced platform for sharing user-generated recordings of bird calls worldwide.
+We build species distribution maps using discrete summaries of birdcall recording observations and remote sensing data in a lattice.
+We fit a Poisson generalized linear model (GLM) to the data and incorporate spatial random effects to introduce smoothing.
 
 \section{Dataset}
 \subsection{BirdCLEF 2022 Training Metadata}
@@ -79,6 +81,8 @@ The dataset is generated over each polygon in the lattice, computing an aggregat
 
 \subsection{Conditional Autoregressive Distribution}
 
+The CAR distribution is a particular form of the multivariate normal with a covariance matrix that captures the adjacency structure of the neighborhood graph. 
+PyMC provides this distribution out-of-the-box, which we utilize for spatial random effects \cite{salvatier_probabilistic_2016}.
 The following equation gives the likelihood of a conditional autoregression (CAR) distribution:
 
 \begin{equation}
@@ -98,9 +102,52 @@ where
 \end{aligned}
 \end{equation}
 
+We set the following notation for use in our model definitions:
 
-The CAR distribution is a particular form of the multivariate normal with a covariance matrix that captures the adjacency structure of the neighborhood graph. 
-PyMC provides this distribution out-of-the-box, which we utilize for spatial random effects \cite{salvatier_probabilistic_2016}.
+\begin{equation}
+\label{eq:car}
+\phi_i | \mu_i, \tau_i, \alpha, W \sim CAR(\mu_i, \tau_i, \alpha, W)
+\end{equation}
+
+We build a simple model to observe the effects on a simple intercept and spatial random effects model.
+
+\begin{equation}
+\begin{aligned}
+    Y_i &\sim Poisson(\theta) \\
+    \log(\theta) &= \beta_0 + \phi_i \\
+    \phi_i &\sim CAR(0, 10^{-3}, \alpha, W) \\
+\end{aligned}
+\end{equation}
+
+We vary values of $\alpha$ in figure \ref{fig:alpha_car} using equation \ref{eq:car}.
+We observe smoothing over our map based on each cell's immediate neighbor. 
+Note that spatial random effects quickly drop off with a Manhattan distance of 1 because the autoregressive effects are only affected by the immediate neighbors.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report/figures/alpha_quail.png}
+\caption{CAR model of the California Quail with varying alpha values, where we set missing values to 0. Higher alpha values mean more information sharing across neighbors.}
+\label{fig:alpha_car}
+\end{figure}
+
+\subsection{Imputing Missing Values}
+
+In our dataset, we need to choose how to deal with the sparsity of observations.
+Our lattice is often empty, depending on the bird species' rarity and the lattice grid's resolution.
+We would like to include all the cells in our model to obtain the posterior predictive for cells that do not have observations.
+We can either let PyMC impute values for these cells implicitly using a missing completely at random (MCAR) assumption or fill in the missing values with zeros to account for no observations.
+We can consider this a censored problem since the dataset is the sampled accumulation of birdcall recordings since the start of the xeno-canto effort; we effectively right censor new observations.
+However, we simplify our modeling by not including a censoring assumption.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report/figures/implicit_explicit_imputation.png}
+\caption{CAR model of the California Quail (calqua), using implicit imputation from the data (missing at random) and filling missing data with 0.}
+\label{fig:imputing}
+\end{figure}
+
+We find in figure \ref{fig:imputing} that imputing missing entries using zeros results in smoothing of the original data points, whereas the implicit imputation replaces empty entries with the posterior derived from the data.
+We opt to impute missing observations with zeroes for further models.
 
 \subsection{Stochastic Search Variable Selection}
 
@@ -111,9 +158,24 @@ We use a stochastic search variable selection (SSVS) to inform our choice of fea
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.5\textwidth]{report/figures/svss_model.png}
+\caption{Graphical SSVS model procedure.}
 \end{figure}
 
-We fit a Poisson GLM to the Western US dataset where $\beta$ terms are a deterministic function $\delta$ representing the binary likelihood that the model includes a feature and $\alpha$ representing the strength of the covariate in the regression.
+\begin{equation}
+\label{eq:svss_model}
+\begin{aligned}
+    Y &\sim Poisson(\theta) \\
+    \log(\theta) &= \beta_0 + X \beta \\
+    \beta &= \delta \alpha \\
+    \alpha_i &\sim N(\mu, 1/\tau) \\
+    \mu &\sim N(0, 1000), \tau \sim Ga(0.1, 0.1) \\
+    \delta_i &\sim Be(p) \\
+    p &\sim Unif(0, 1)
+\end{aligned}
+\end{equation}
+
+We fit a Poisson GLM to the Western US dataset where $\beta$ terms are a deterministic function of $\delta$ representing the binary likelihood that the model includes a feature and $\alpha$ representing the strength of the covariate in the regression, as per equation \ref{eq:svss_model}.
+We standardize all features to be zero mean and unit variance, which helps prevent model divergence.
 In our first model, we include all raw (or non-transformed) features and concatenate them with the log-scaled population density features and land cover classification.
 We do not scale elevation and temperature because these features are not heavy-tailed.
 
@@ -201,18 +263,38 @@ delta[26] &  0.972 &  0.165 &     1.0 &      1.0 &       land\_cover\_17 \\
 \label{table:svss_model}
 \end{figure}
 
+We fit a new model that drops non-transformed features for population density and land cover classification.
 We provide the full summary of $\delta$ posteriors in table \ref{table:delta_values}.
 We also provide the most likely models in table \ref{table:svss_model}.
-We choose the non-transformed elevation and temperature features with log-scaled population density and land cover classification features for our final model. 
+The most likely model includes all features in this set, so we use these features going forward.
 
 \subsection{Model Selection}
 \label{model_selection}
 
 We try out a variety of Poisson Generalized Linear Models (GLMs) for developing our distribution map.
+We chose the Poisson distribution because it best represents events distributed over geographical areas and time.
 These models have three main components: an intercept term, a feature term, and a random spatial effects term.
 We use hierarchical and multi-level modeling techniques to pool and vary information across observations, species, and geographical grid indices.
 
-TODO: write out three models
+In addition to the models in equation \ref{eq:car} and equation \ref{eq:svss_model}, we include variants that allow for varied intercepts and slopes for each species.
+We are limited to a single instance of the CAR distribution per model, leading to certain limitations in the final distribution maps.
+We define our final model in equation \ref{eq:full_model}.
+
+\begin{equation}
+\label{eq:full_model}
+\begin{aligned}
+    Y_{ij} &\sim Poisson(\theta_{ij}) \\
+    \log(\theta_{ij}) &= \beta_{j0} + \beta_{j} X + \phi_i \\
+    \beta_{jk} &\sim N(\bar{\mu_\beta}, \bar{\sigma_\beta}) \\
+    \bar{\mu_\beta} &\sim N(0, 1.5), 
+        \bar{\sigma_\beta} \sim Exp(1) \\
+    \phi_i &\sim CAR(0, \bar{\sigma_\phi}, \alpha, W) \\
+    \alpha &\sim Beta(5, 1), \bar{\sigma_\phi} \sim Unif(0, 20)
+\end{aligned}\
+\end{equation}
+
+where $i$ indexes a lattice cell, $j$ indexes bird species, and $k$ indexes dataset features.
+
 
 \begin{figure}[H]
 \centering
@@ -221,7 +303,7 @@ TODO: write out three models
 \end{figure}
 
 We compare our models using the widely applicable information criterion (WAIC) on a deviance scale in table \ref{table:waic_comparison}.
-We choose the model with the lowest deviance to impute empty cells.
+We choose the model with the lowest deviance to build species distribution maps.
 According to the ranking, the best model is the varying intercept, slope, and CAR model.
 
 \begin{figure}[H]
@@ -242,18 +324,19 @@ pooled\_intercept\_pooled\_slope\_model       &     8 &    3896.91 &  631.80 &  
 varying\_intercept\_model                       &     9 &    4021.92 &  115.95 &    3054.87 &  799.54 &  792.66 \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of models using WAIC on a deviance scale. Lower is better.}
+\caption{Comparison of models using WAIC on a deviance scale. Lower is better. A model component varies if there is an instantiation of a random variable for each species. A component pools if there is a shared variable across all species.}
 \label{table:waic_comparison}
 \end{figure}
 
 \subsection{Posterior Predictive Distribution Maps}
 
-We fit our best model to the data and impute all empty cells in the Western US (2-degree resolution) dataset.
+We fit our best model to the data and find the posterior predictive for all cells in the Western US (2-degree resolution) dataset.
 We prepare the dataset by grouping birdcall recording locations into their bounding cells and primary species labels.
 To avoid excess computation and sparsity, we choose a subset of bird species and set a default category of "other".
+All features are standardized to zero mean and unit variance.
 
 We model using two variations of the prepared dataset.
-In figure \ref{fig:map_4}, we choose the top 3 species and impute the rest of the missing cells.
+In figure \ref{fig:map_4}, we choose the top 3 species and implicitly impute the rest of the missing cells from the posterior derived from the data.
 We note that this results in a total of $211/384$ or 55\% of entries that need to be imputed.
 Sampling from the posterior takes 7 minutes and 40 seconds with 16 cores for 56000 samples.
 The second model uses the top 15 species to generate the dataset, which has greater sparsity with $1178/1536$ or 77\% of entries that need to be imputed.
@@ -263,18 +346,9 @@ In this case, the model takes 4 minutes and 50 seconds and 8 minutes and 2 secon
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{report/figures/western_us_raw_4.png}
-\includegraphics[width=0.8\textwidth]{report/figures/western_us_predict_4.png}
-\caption{Frequency maps of the 15 most frequent species.}
-\label{fig:map_4}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{report/figures/western_us_raw_16.png}
-\includegraphics[width=0.8\textwidth]{report/figures/western_us_predict_16.png}
-\caption{Frequency maps of the 15 most frequent species.}
-\label{fig:map_16}
+\includegraphics[width=0.8\textwidth]{report/figures/trace_plot_phi.png}
+\caption{Trace plot of slopes $\beta$ and spatial random effects $\phi$.}
+\label{fig:trace_plot}
 \end{figure}
 
 
@@ -297,28 +371,46 @@ betas[other, landcover\_water\_bodies]               &  0.385 &  0.159 &   0.079
 \label{table:significance}
 \end{figure}
 
+We end up with an extensive list of significant covariate slopes that do not intersect with the origin with a 94\% credible interval.
+We provide a subset of the significant features relative to the "other" bucket in figure \ref{table:significance}.
+We see that an urban land cover classification positively affects an observation.
+The urban classification relationship aligns with the distributional assumption that recordings are more likely if they are more accessible to people.
+We see other intuitive relationships, such as grasslands having a negative effect on birds due to the lack of nesting areas.
+
 In our three species example in figure \ref{fig:map_4}, we observe the effects of our choice of hierarchical modeling.
 We note the high-frequency cells (yellow) in the northern and southernmost points of the birdcall recording plot.
 The prediction plot shows that the model shares information across species.
 The likeliest source of this comes from the CAR distribution, which is instantiated once across all species.
 Instead of other information, the random effect of that particular geographical cell is more prominent.
 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{report/figures/western_us_raw_4.png}
+\includegraphics[width=0.8\textwidth]{report/figures/western_us_predict_4.png}
+\caption{Frequency maps of the 15 most frequent species.}
+\label{fig:map_4}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{report/figures/western_us_raw_16.png}
+\includegraphics[width=0.8\textwidth]{report/figures/western_us_predict_16.png}
+\caption{Frequency maps of the 15 most frequent species.}
+\label{fig:map_16}
+\end{figure}
+
+\clearpage
+
 We make a few species-specific observations in the top 15 species in figure \ref{fig:map_16}.
 First, we take a look at Gambel's Quail (gamqua) and the California Quail (calqua), which have distinctive geographical distributions localized to the US Southwest and California, respectively, as per distribution maps on eBird \cite{ebird_gamqua} \cite{ebird_calqua}.
 The raw recording frequencies generally fall within this distribution.
-
-In our initial implementation, where we imputed all missing values as missing completely at random (MCAR), we note that the posterior predictive for these two quail species does not accurately reflect the actual distribution of birdcall recording frequencies.
+We imputed all missing values in our initial implementation as missing completely at random (MCAR). 
+We noted that the posterior predictive for these two quail species did not accurately reflect the actual distribution of birdcall recording frequencies.
 Instead of treating missing observations as areas with a low likelihood of predictive values, it instead tries to impute them using a reasonable value from the posterior of observed data.
 The bottom of \ref{fig:map_16} includes the final model where we set missing values to 0.
 The model reasonably captures these quail species' spatial frequency to a reasonable degree.
 However, we note a strong bias toward observations across all species.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{report/figures/trace_plot_phi.png}
-\caption{Trace plot of slopes $\beta$ and spatial random effects $\phi$.}
-\label{fig:trace_plot}
-\end{figure}
 
 When we look at the distribution of our values of $\phi$ in figure \ref{fig:trace_plot}, we see many values are more significant than 1.
 Because the model shares spatial random effects across species, we end up with predictive values that extend further than what the actual natural distribution might be.
@@ -328,18 +420,18 @@ If we could model random geospatial effects on a per-species basis using a share
 
 \section{Conclusion}
 
-We made design choices during this analysis, including data collection resolution (i.e., how large are grid cells for Google Earth Engine), dealing with missing observations, and modeling structure.
+We made design choices during this analysis, including data collection resolution (i.e., how large are grid cells for Google Earth Engine), dealing with missing observations, feature selection, and modeling structure.
 We found that hierarchical models, while powerful, can introduce complicating factors that reduce the interpretability of the final species distribution map.
 We also have to remember the distributional semantics of the birdcall recording metadata.
 The set of people who use and upload to xeno-canto are more likely to visit and record birds in easily accessible regions of the world.
 In addition, the set of recordings included in the BirdCLEF competition is a much smaller subset than what is available from the source site.
 
-We want to explore the effect of the underlying dataset resolution on modeling and choose a more extensive geography that spans several continents.
-We also want to explore using hexagonal lattices, which we can implement with trivial modifications.
+Given more time, we want to explore the effect of the underlying dataset resolution on modeling and choose a more extensive geography that spans several continents.
+We also want to explore hexagonal lattices, which we can implement with trivial modifications to our source.
 Finally, it would be interesting to use data directly from xeno-canto instead of using the BirdCLEF competition training subset.
 The source dataset would contain far more data points and might make up for structural choices that we impose on our model.
 
-On the modeling side, it would be interesting to determine how to create an instance of a CAR distribution per species.
+On the modeling side, it would be interesting to create an instance of a CAR distribution per species.
 This limitation causes unwanted shrinkage and forces us to build a model per species without access to multi-level modeling techniques.
 Further research is needed to find multivariate distributions that accept a kernel, allowing for a more nuanced smoothness parameter across a neighborhood of cells.
 For example, instead of a binary adjacency matrix, we might define a weighted adjacency matrix such that influence drops at an exponential rate up to a Manhattan distance of 3 from the originating cell.
