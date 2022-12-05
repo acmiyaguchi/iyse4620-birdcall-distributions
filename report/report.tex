@@ -67,7 +67,7 @@ Google Earth Engine is a cloud-based platform for processing geospatial data \ci
 We use remote sensing data from the United States Geological Survey (USGS) and the National Aeronautics and Space Administration (NASA) to obtain elevation, temperature, land cover classification, and population density data from various sources hosted on Earth Engine.
 
 The NASA Shuttle Radar Topography Mission dataset (\texttt{USGS/SRTMGL1\_003}) \cite{nasa_srtmg} provides elevation data.
-The TMODIS/Terra Land Surface Temperature/Emissivity dataset (\texttt{MODIS/006/MOD11A1}) \cite{wan_zhengming_mod11a1_2015} provides temperature data.
+The MODIS/Terra Land Surface Temperature/Emissivity dataset (\texttt{MODIS/006/MOD11A1}) \cite{wan_zhengming_mod11a1_2015} provides temperature data.
 The MODIS/Terra+Aqua Land Cover Type dataset (\texttt{MODIS/006/MCD12Q1}) \cite{friedl_mark_mcd12q1_2019} provides land cover classification statistics.
 The Gridded Population of the World, Version 4 dataset (\texttt{CIESIN/GPWv411/GPW\_Population\_Density}) \cite{gpwv4} provides population density data.
 
@@ -79,7 +79,7 @@ The dataset is generated over each polygon in the lattice, computing an aggregat
 
 \subsection{Conditional Autoregressive Distribution}
 
-The likelihood for a conditional autoregression (CAR) distribution is given by the following equation:
+The following equation gives the likelihood of a conditional autoregression (CAR) distribution:
 
 \begin{equation}
 f(x|W, \alpha, \tau) =
@@ -99,7 +99,7 @@ where
 \end{equation}
 
 
-This is a special form of the multivariate normal with with a covariance matrix that captures the adjacency structure of the neighborhood graph. 
+The CAR distribution is a particular form of the multivariate normal with a covariance matrix that captures the adjacency structure of the neighborhood graph. 
 PyMC provides this distribution out-of-the-box, which we utilize for spatial random effects \cite{salvatier_probabilistic_2016}.
 
 \subsection{Stochastic Search Variable Selection}
@@ -113,9 +113,9 @@ We use a stochastic search variable selection (SSVS) to inform our choice of fea
 \includegraphics[width=0.5\textwidth]{report/figures/svss_model.png}
 \end{figure}
 
-We fit a Poisson GLM to the Western US dataset where $\beta$ terms are a deterministic function $\delta$ representing the binary likelihood that a co-variate is included in the model and $\alpha$ representing the strength of the co-variate in the regression.
-In our first model, we include all of the raw (or non-transformed) features and concatenate it with the log-scaled features of population density and land cover classification.
-We do not scale elevation and temperature because these features are not heavy tailed.
+We fit a Poisson GLM to the Western US dataset where $\beta$ terms are a deterministic function $\delta$ representing the binary likelihood that the model includes a feature and $\alpha$ representing the strength of the covariate in the regression.
+In our first model, we include all raw (or non-transformed) features and concatenate them with the log-scaled population density features and land cover classification.
+We do not scale elevation and temperature because these features are not heavy-tailed.
 
 \begin{figure}[hbt!]
 \centering
@@ -137,14 +137,13 @@ We do not scale elevation and temperature because these features are not heavy t
 4 &  000011010000000000000000000110011001111100000 &     0.000250 \\
 \bottomrule
 \end{tabular}
-\caption{Top models with Poisson GLM with non-transformed and log-scaled co-variates. Each string represents a binary mask for whether a feature is included in a model. The first 27 positions are non-transformed, while the last 18 are log-transformed.}
+\caption{Top models with Poisson GLM with non-transformed and log-scaled covariates. Each string represents a binary mask for whether a model includes a feature. The first 27 positions are non-transformed, while the last 18 are log-transformed.}
 \label{table:svss_log_vs_nonlog_models}
 \end{figure}
 
-We observe in figure \ref{fig:svss_log_vs_nonlog} that mean values of $\delta$ are larger, and therefore more likely to be included in a model.
+We observe in figure \ref{fig:svss_log_vs_nonlog} that mean values of $\delta$ are more prominent and, therefore, more likely to be included in a model.
 We count the instances of each possible model and find the most likely models supported by the data.
-In table \ref{table:svss_log_vs_nonlog_models}, we find that the SSVS procedure favors log-scaled land cover classification features over the non-transformed features.
-This corroborates the comparison of $\delta$ means in figure \ref{fig:svss_log_vs_nonlog}.
+In table \ref{table:svss_log_vs_nonlog_models}, we find that the SSVS procedure favors log-scaled land cover classification features over the non-transformed features, corroborating the comparison of $\delta$ means in figure \ref{fig:svss_log_vs_nonlog}.
 
 \begin{figure}[H]
 \centering
@@ -181,7 +180,7 @@ delta[25] &  0.422 &  0.494 &     0.0 &      1.0 &       land\_cover\_16 \\
 delta[26] &  0.972 &  0.165 &     1.0 &      1.0 &       land\_cover\_17 \\
 \bottomrule
 \end{tabular}
-\caption{Probability that a feature is included in a model via SSVS. We note that population density and land cover classification features are log-scaled.}
+\caption{Probability that a  model includes a feature via SSVS. We note that population density and land cover classification features are log-scaled.}
 \label{table:delta_values}
 \end{figure}
 
@@ -204,14 +203,14 @@ delta[26] &  0.972 &  0.165 &     1.0 &      1.0 &       land\_cover\_17 \\
 
 We provide the full summary of $\delta$ posteriors in table \ref{table:delta_values}.
 We also provide the most likely models in table \ref{table:svss_model}.
-We choose the set of non-transformed elevation and temperature features with log-scaled population density and land cover classification features for our final model. 
+We choose the non-transformed elevation and temperature features with log-scaled population density and land cover classification features for our final model. 
 
 \subsection{Model Selection}
 \label{model_selection}
 
 We try out a variety of Poisson Generalized Linear Models (GLMs) for developing our distribution map.
-There are three main components to these models: an intercept term, a feature term, and a random spatial effects term.
-We take advantage of hierarchical and multi-level modeling techniques to both pool and vary information across observations, species, and geographical grid indices.
+These models have three main components: an intercept term, a feature term, and a random spatial effects term.
+We use hierarchical and multi-level modeling techniques to pool and vary information across observations, species, and geographical grid indices.
 
 TODO: write out three models
 
@@ -222,8 +221,8 @@ TODO: write out three models
 \end{figure}
 
 We compare our models using the widely applicable information criterion (WAIC) on a deviance scale in table \ref{table:waic_comparison}.
-We choose the model with the smallest deviance to impute empty cells.
-The best model according to the ranking is the varying intercept, varying slope, and CAR model.
+We choose the model with the lowest deviance to impute empty cells.
+According to the ranking, the best model is the varying intercept, slope, and CAR model.
 
 \begin{figure}[H]
 \centering
@@ -260,7 +259,7 @@ Sampling from the posterior takes 7 minutes and 40 seconds with 16 cores for 560
 The second model uses the top 15 species to generate the dataset, which has greater sparsity with $1178/1536$ or 77\% of entries that need to be imputed.
 With greater sparsity comes higher computational costs, with the larger dataset and model taking 37 minutes and 44 seconds to sample.
 We also fit models where we impute missing values with 0 ahead of time.
-In this case, the model 4 minutes and 50 seconds, and 8 minutes and 2 seconds respectively.
+In this case, the model takes 4 minutes and 50 seconds and 8 minutes and 2 seconds, respectively.
 
 \begin{figure}[H]
 \centering
@@ -298,36 +297,56 @@ betas[other, landcover\_water\_bodies]               &  0.385 &  0.159 &   0.079
 \label{table:significance}
 \end{figure}
 
-In our 3 species example in figure \ref{fig:map_4}, we observe effects of our choice of heirarchical modeling.
-We make note of the high frequency cells (yellow) in the northern and southern most points of the birdcall recording plot.
-In the prediction plot, we see that information is being shared across all species.
+In our three species example in figure \ref{fig:map_4}, we observe the effects of our choice of hierarchical modeling.
+We note the high-frequency cells (yellow) in the northern and southernmost points of the birdcall recording plot.
+The prediction plot shows that the model shares information across species.
 The likeliest source of this comes from the CAR distribution, which is instantiated once across all species.
-In lieu of other information, the random effect of that particular geographical cell is more prominent.
+Instead of other information, the random effect of that particular geographical cell is more prominent.
 
-We make a few species specific observations in the top 15 species in figure \ref{fig:map_16}.
-First we take a look at Gambel's Quail (gamqua) and the California Quail (calqua), which have distinctive geographical distributions localized to the US Southwest and California respectively as per distribution maps on eBird \cite{ebird_gamqua} \cite{ebird_calqua}.
+We make a few species-specific observations in the top 15 species in figure \ref{fig:map_16}.
+First, we take a look at Gambel's Quail (gamqua) and the California Quail (calqua), which have distinctive geographical distributions localized to the US Southwest and California, respectively, as per distribution maps on eBird \cite{ebird_gamqua} \cite{ebird_calqua}.
 The raw recording frequencies generally fall within this distribution.
 
-In our initial implementation where we imputed all missing values as missing completely at random (MCAR), we note that the posterior predictive for these two quail species do not accurately reflect the true distribution of birdcall recording frequencies.
-Instead of treating missing observations as areas with low likelihood of predictive values, it instead tries to impute the values using a reasonable value from the posterior of observed data.
-The final model where missing values are imputed ahead of time with a value of 0 is pictured at the bottom of \ref{fig:map_16}.
-We see both species of quail are captured to a reasonable degree.
-However, we once again note a strong bias toward observations across all species.
-When we look at the distribution of our values of $\phi$, we see there are many strong values that are greater than 1.
-Because spatial random effects are shared across species, we end up with predictive values that extend further than what the true natural distribution might be.
-However, we are limited in PyMC because we are not able to create a multi-dimensional CAR variable such that we one variable per species.
-If we were able to model random geospatial effects on a per-species basis using a shared hyper-prior on alpha, then our models may fit our data better.
+In our initial implementation, where we imputed all missing values as missing completely at random (MCAR), we note that the posterior predictive for these two quail species does not accurately reflect the actual distribution of birdcall recording frequencies.
+Instead of treating missing observations as areas with a low likelihood of predictive values, it instead tries to impute them using a reasonable value from the posterior of observed data.
+The bottom of \ref{fig:map_16} includes the final model where we set missing values to 0.
+The model reasonably captures these quail species' spatial frequency to a reasonable degree.
+However, we note a strong bias toward observations across all species.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{report/figures/trace_plot_phi.png}
+\caption{Trace plot of slopes $\beta$ and spatial random effects $\phi$.}
+\label{fig:trace_plot}
+\end{figure}
+
+When we look at the distribution of our values of $\phi$ in figure \ref{fig:trace_plot}, we see many values are more significant than 1.
+Because the model shares spatial random effects across species, we end up with predictive values that extend further than what the actual natural distribution might be.
+However, we are limited in PyMC because we cannot create a multi-dimensional CAR variable with one variable per species.
+If we could model random geospatial effects on a per-species basis using a shared hyper-prior on alpha, our models may fit our data better.
 
 
 \section{Conclusion}
 
-In this project, we build a species distribution map of geospatial metadata attached to birdcall recordings using Bayesian modeling methodologies.
-We are able to incorporate information from various public sources using Google Earth Engine by discretizing our data into a regular lattice.
+We made design choices during this analysis, including data collection resolution (i.e., how large are grid cells for Google Earth Engine), dealing with missing observations, and modeling structure.
+We found that hierarchical models, while powerful, can introduce complicating factors that reduce the interpretability of the final species distribution map.
+We also have to remember the distributional semantics of the birdcall recording metadata.
+The set of people who use and upload to xeno-canto are more likely to visit and record birds in easily accessible regions of the world.
+In addition, the set of recordings included in the BirdCLEF competition is a much smaller subset than what is available from the source site.
 
-We found many design choices that needed to made through this analysis including data collection resolution (e.g. how many degrees should we geospatial data), dealing with missing observations, and modeling structure.
-We found that heiarchical models, while powerful, can introduce complicating factors that reduce interpretability of the final species distribution map.
+We want to explore the effect of the underlying dataset resolution on modeling and choose a more extensive geography that spans several continents.
+We also want to explore using hexagonal lattices, which we can implement with trivial modifications.
+Finally, it would be interesting to use data directly from xeno-canto instead of using the BirdCLEF competition training subset.
+The source dataset would contain far more data points and might make up for structural choices that we impose on our model.
 
+On the modeling side, it would be interesting to determine how to create an instance of a CAR distribution per species.
+This limitation causes unwanted shrinkage and forces us to build a model per species without access to multi-level modeling techniques.
+Further research is needed to find multivariate distributions that accept a kernel, allowing for a more nuanced smoothness parameter across a neighborhood of cells.
+For example, instead of a binary adjacency matrix, we might define a weighted adjacency matrix such that influence drops at an exponential rate up to a Manhattan distance of 3 from the originating cell.
 
+Through this project, we can build a species distribution map of geospatial metadata attached to birdcall recordings using Bayesian modeling methodologies.
+Using Google Earth Engine, we can incorporate information from various public sources by discretizing our data into regular lattices.
+Though there are computational and modeling choices that make geospatial modeling challenging, it is a reasonable way to generate species distribution maps.
 
 \printbibliography
 
