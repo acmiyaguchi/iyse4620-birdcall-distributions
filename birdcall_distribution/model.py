@@ -49,7 +49,10 @@ def make_varying_intercept_model(prep_df, *args, **kwargs):
         intercept = pm.Normal("intercept", mu=0, tau=1e-4, dims="species_idx")
         mu = pm.Deterministic("mu", pm.math.exp(intercept[species_idx]), dims="obs_idx")
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
 
     return model
@@ -86,7 +89,10 @@ def make_varying_intercept_car_model(prep_df, W, *args, **kwargs):
             "mu", pm.math.exp(intercept[species_idx] + phi[adj_idx]), dims="obs_idx"
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
 
@@ -113,7 +119,10 @@ def make_pooled_intercept_car_model(prep_df, W, *args, **kwargs):
             "mu", pm.math.exp(intercept + phi[adj_idx]), dims="obs_idx"
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
 
@@ -147,7 +156,10 @@ def make_varying_intercept_pooled_covariate_model(prep_df, *args, **kwargs):
             dims="obs_idx",
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
 
@@ -173,7 +185,10 @@ def make_pooled_intercept_pooled_covariate_model(prep_df, *args, **kwargs):
             dims="obs_idx",
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
 
@@ -206,7 +221,10 @@ def make_pooled_intercept_varying_covariate_model(prep_df, *args, **kwargs):
             dims="obs_idx",
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
 
@@ -245,7 +263,10 @@ def make_varying_intercept_varying_covariate_model(prep_df, *args, **kwargs):
             dims="obs_idx",
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
 
@@ -290,7 +311,10 @@ def make_pooled_intercept_varying_covariate_car_model(prep_df, W, *args, **kwarg
             dims="obs_idx",
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
 
@@ -340,7 +364,10 @@ def make_varying_intercept_pooled_covariate_car_model(prep_df, W, *args, **kwarg
             dims="obs_idx",
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
 
@@ -391,6 +418,9 @@ def make_varying_intercept_varying_covariate_car_model(prep_df, W, *args, **kwar
             dims="obs_idx",
         )
         pm.Poisson(
-            "y", mu=mu, observed=np.ma.masked_invalid(prep_df.y.values), dims="obs_idx"
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
         )
     return model
