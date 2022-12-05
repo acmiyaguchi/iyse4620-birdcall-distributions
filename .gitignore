@@ -1,5 +1,8 @@
 .env/
-data/
+data/*
 .venv/
 .vscode
 __pycache__/
+
+!data/*.parquet
+!data/raw
