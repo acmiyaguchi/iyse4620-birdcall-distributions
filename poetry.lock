@@ -238,7 +238,7 @@ tests = ["flufl.lock", "packaging (>=20)", "pytest (>=5.1.2)"]
 
 [package.source]
 type = "file"
-url = "data/Cartopy-0.20.2-cp310-cp310-win_amd64.whl"
+url = "data/wheels/Cartopy-0.20.2-cp310-cp310-win_amd64.whl"
 
 [[package]]
 name = "certifi"
@@ -1504,7 +1504,7 @@ certifi = "*"
 
 [package.source]
 type = "file"
-url = "data/pyproj-3.3.1-cp310-cp310-win_amd64.whl"
+url = "data/wheels/pyproj-3.3.1-cp310-cp310-win_amd64.whl"
 
 [[package]]
 name = "pyrsistent"
@@ -1693,7 +1693,7 @@ vectorized = ["numpy"]
 
 [package.source]
 type = "file"
-url = "data/Shapely-1.8.2-cp310-cp310-win_amd64.whl"
+url = "data/wheels/Shapely-1.8.2-cp310-cp310-win_amd64.whl"
 
 [[package]]
 name = "six"
@@ -1932,7 +1932,7 @@ gpu = ["jax", "jaxlib", "numpyro"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "b29531d8851a6b558085ca1305a8da599d354ef274bcd7266365724f11c69282"
+content-hash = "f5d63d613fa88900eb688053115cebd47bbbe19c45afd66a1697d7692fec1874"
 
 [metadata.files]
 aeppl = [

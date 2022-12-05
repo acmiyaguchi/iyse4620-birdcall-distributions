@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "birdcall_distribution"
-version = "0.3.0"
+version = "1.0.0"
 description = ""
 authors = ["Anthony Miyaguchi <acmiyaguchi@gatech.edu>"]
 license = "MIT"
@@ -24,9 +24,9 @@ numpyro = { version = "^0.10.1", optional = true }
 # NOTE: we have to manually add the paths for the wheels; this is very hacky and
 # I'm unsure if this will install properly on linux anymore
 Cartopy = { version = "0.20.2" }
-cartopy = { path = "data/Cartopy-0.20.2-cp310-cp310-win_amd64.whl" }
-shapely = { path = "data/Shapely-1.8.2-cp310-cp310-win_amd64.whl" }
-pyproj = { path = "data/pyproj-3.3.1-cp310-cp310-win_amd64.whl" }
+cartopy = { path = "data/wheels/Cartopy-0.20.2-cp310-cp310-win_amd64.whl" }
+shapely = { path = "data/wheels/Shapely-1.8.2-cp310-cp310-win_amd64.whl" }
+pyproj = { path = "data/wheels/pyproj-3.3.1-cp310-cp310-win_amd64.whl" }
 
 [tool.poetry.extras]
 gpu = ["jax", "jaxlib", "numpyro"]
