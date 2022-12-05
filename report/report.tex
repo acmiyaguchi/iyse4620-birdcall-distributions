@@ -259,6 +259,8 @@ We note that this results in a total of $211/384$ or 55\% of entries that need t
 Sampling from the posterior takes 7 minutes and 40 seconds with 16 cores for 56000 samples.
 The second model uses the top 15 species to generate the dataset, which has greater sparsity with $1178/1536$ or 77\% of entries that need to be imputed.
 With greater sparsity comes higher computational costs, with the larger dataset and model taking 37 minutes and 44 seconds to sample.
+We also fit models where we impute missing values with 0 ahead of time.
+In this case, the model 4 minutes and 50 seconds, and 8 minutes and 2 seconds respectively.
 
 \begin{figure}[H]
 \centering
@@ -281,8 +283,6 @@ With greater sparsity comes higher computational costs, with the larger dataset 
 \centering
 \begin{tabular}{lrrrr}
 \toprule
-\begin{tabular}{lrrrr}
-\toprule
 index &   mean &     sd &  hdi\_3\% &  hdi\_97\% \\
 \midrule
 betas[other, landcover\_evergreen\_broadleaf\_forest] &  0.371 &  0.156 &   0.083 &    0.668 \\
@@ -294,7 +294,7 @@ betas[other, landcover\_permanent\_snow\_and\_ice]     &  0.274 &  0.132 &   0.0
 betas[other, landcover\_water\_bodies]               &  0.385 &  0.159 &   0.079 &    0.674 \\
 \bottomrule
 \end{tabular}
-\caption{A subset of random slopes from the top 15 species that are significant given a 94\% HDI, where we observe species in the "other" bucket}
+\caption{A subset of random slopes from the other bucket of the top 15 species that are significant given a 94\% HDI.}
 \label{table:significance}
 \end{figure}
 
@@ -315,22 +315,17 @@ We see both species of quail are captured to a reasonable degree.
 However, we once again note a strong bias toward observations across all species.
 When we look at the distribution of our values of $\phi$, we see there are many strong values that are greater than 1.
 Because spatial random effects are shared across species, we end up with predictive values that extend further than what the true natural distribution might be.
+However, we are limited in PyMC because we are not able to create a multi-dimensional CAR variable such that we one variable per species.
+If we were able to model random geospatial effects on a per-species basis using a shared hyper-prior on alpha, then our models may fit our data better.
 
-
-\section{Discussion}
-
-There are several points 
-
-- Spatial random effects as a form of local smoothing
-- Hierarchical modeling as a form of incorporating information across species
-- Missing data imputation with distributional assumptions
-
-There are several design choices in the structure of the data and the models that have been left unexplored. One such example is the difference 
 
 \section{Conclusion}
 
 In this project, we build a species distribution map of geospatial metadata attached to birdcall recordings using Bayesian modeling methodologies.
 We are able to incorporate information from various public sources using Google Earth Engine by discretizing our data into a regular lattice.
+
+We found many design choices that needed to made through this analysis including data collection resolution (e.g. how many degrees should we geospatial data), dealing with missing observations, and modeling structure.
+We found that heiarchical models, while powerful, can introduce complicating factors that reduce interpretability of the final species distribution map.
 
 
 
