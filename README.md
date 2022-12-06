@@ -1,8 +1,18 @@
 # bircall-distribution
 
-This repository contains code for building BirdCLEF birdcall distribution maps.
+This repository contains [IYSE 6420](https://omscs.gatech.edu/isye-6420-bayesian-statistics) project code for building BirdCLEF birdcall distribution maps.
 It uses Bayesian modeling techniques to estimate frequencies of birdcall recording metadata.
 This project relies heavily on [PyMC](https://www.pymc.io) and [Google Earth Engine](https://earthengine.google.com/).
+
+Below are a few plots from the project, which are discussed in more detail in the report.
+
+![car distribution](./report/figures/alpha_quail.png)
+
+_Distribution of the California Quail smoothed using the a Poisson GLM with a CAR prior distribution for random effects._
+
+![western predict 16](./report/figures/western_us_predict_16.png)
+
+_Poisson GLM posterior predictive species distribution map of the top 15 species in the Western US._
 
 ## quickstart
 
