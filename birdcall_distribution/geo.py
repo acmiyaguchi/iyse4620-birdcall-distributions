@@ -91,6 +91,19 @@ def generate_grid(geometry, map_dims, grid_dims):
             )
             if geometry.intersects(polygon):
                 polygons[f"{x}_{y}"] = polygon
+
+    # lets remove all polygons that do not have any neighbors to avoid
+    # having a bunch of small polygons that are not connected to the rest of the
+    # grid. O(n^2)
+    for key, polygon in list(polygons.items()):
+        neighbors = [
+            neighbor
+            for neighbor in polygons.values()
+            if neighbor != polygon and polygon.intersects(neighbor)
+        ]
+        if not neighbors:
+            del polygons[key]
+
     return polygons
 
 
@@ -111,6 +124,9 @@ def get_grid_meta(region, grid_size):
     elif region == "california":
         geometry = get_california_geometry()
         extent = CA_EXTENT
+    elif region == "americas":
+        geometry = get_americas_geometry()
+        extent = AMERICAS_EXTENT
     else:
         raise ValueError("Unknown region")
     grid = generate_grid(geometry, extent, (grid_size, grid_size))

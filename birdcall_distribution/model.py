@@ -29,8 +29,8 @@ def _coords(prep_df, scaled_data_df):
     species_cat = prep_df.primary_label.astype("category")
     n_features = scaled_data_df.shape[1]
     coords = dict(
-        features_idx=np.arange(n_features),
-        species_idx=sorted(species_cat.cat.codes.unique()),
+        features_idx=scaled_data_df.columns,
+        species_idx=species_cat.cat.categories,
         adj_idx=sorted(prep_df.index.unique()),
         obs_idx=np.arange(prep_df.shape[0]),
     )
@@ -67,7 +67,9 @@ def make_varying_intercept_car_model(prep_df, W, *args, **kwargs):
         species_idx = pm.ConstantData(
             "species_idx", species_cat.cat.codes, dims="obs_idx"
         )
-        adj_idx = pm.ConstantData("adj_idx", prep_df.index.values, dims="obs_idx")
+        adj_idx = pm.ConstantData(
+            "adj_idx", prep_df.index.values.astype(int), dims="obs_idx"
+        )
 
         alpha = pm.Beta("alpha", 5, 1)
         sigma_phi = pm.Uniform("sigma_phi", 0, 20)
@@ -83,7 +85,10 @@ def make_varying_intercept_car_model(prep_df, W, *args, **kwargs):
         intercept_bar = pm.Normal("intercept_bar", mu=0, sigma=1.5)
         intercept_sigma = pm.Exponential("intercept_sigma", 1)
         intercept = pm.Normal(
-            "intercept", mu=intercept_bar, tau=1 / intercept_sigma, dims="species_idx"
+            "intercept",
+            mu=intercept_bar,
+            sigma=np.sqrt(intercept_sigma),
+            dims="species_idx",
         )
         mu = pm.Deterministic(
             "mu", pm.math.exp(intercept[species_idx] + phi[adj_idx]), dims="obs_idx"
@@ -102,7 +107,9 @@ def make_pooled_intercept_car_model(prep_df, W, *args, **kwargs):
     scaled_data_df = _scaled_data(prep_df)
 
     with pm.Model(coords=_coords(prep_df, scaled_data_df)) as model:
-        adj_idx = pm.ConstantData("adj_idx", prep_df.index.values, dims="obs_idx")
+        adj_idx = pm.ConstantData(
+            "adj_idx", prep_df.index.values.astype(int).astype(int), dims="obs_idx"
+        )
 
         alpha = pm.Beta("alpha", 5, 1)
         sigma_phi = pm.Uniform("sigma_phi", 0, 20)
@@ -279,7 +286,9 @@ def make_pooled_intercept_varying_covariate_car_model(prep_df, W, *args, **kwarg
         species_idx = pm.ConstantData(
             "species_idx", species_cat.cat.codes, dims="obs_idx"
         )
-        adj_idx = pm.ConstantData("adj_idx", prep_df.index.values, dims="obs_idx")
+        adj_idx = pm.ConstantData(
+            "adj_idx", prep_df.index.values.astype(int), dims="obs_idx"
+        )
         X = pm.ConstantData(
             "X", scaled_data_df.values, dims=("obs_idx", "features_idx")
         )
@@ -300,7 +309,7 @@ def make_pooled_intercept_varying_covariate_car_model(prep_df, W, *args, **kwarg
         betas = pm.Normal(
             "betas",
             mu=betas_bar,
-            tau=1 / betas_sigma,
+            sigma=pm.math.sqrt(betas_sigma),
             dims=("species_idx", "features_idx"),
         )
         mu = pm.Deterministic(
@@ -308,6 +317,44 @@ def make_pooled_intercept_varying_covariate_car_model(prep_df, W, *args, **kwarg
             pm.math.exp(
                 intercept + pm.math.sum(X * betas[species_idx], axis=1) + phi[adj_idx]
             ),
+            dims="obs_idx",
+        )
+        pm.Poisson(
+            "y",
+            mu=mu,
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
+            dims="obs_idx",
+        )
+    return model
+
+
+def make_pooled_intercept_pooled_covariate_car_model(prep_df, W, *args, **kwargs):
+    scaled_data_df = _scaled_data(prep_df)
+
+    with pm.Model(coords=_coords(prep_df, scaled_data_df)) as model:
+        adj_idx = pm.ConstantData(
+            "adj_idx", prep_df.index.values.astype(int), dims="obs_idx"
+        )
+        X = pm.ConstantData(
+            "X", scaled_data_df.values, dims=("obs_idx", "features_idx")
+        )
+
+        alpha = pm.Beta("alpha", 5, 1)
+        tau_phi = pm.Gamma("tau_phi", 1e-3, 1e-3)
+        phi = pm.CAR(
+            "phi",
+            mu=np.zeros(W.shape[0]),
+            tau=tau_phi,
+            alpha=alpha,
+            W=W,
+            dims="adj_idx",
+        )
+
+        intercept = pm.Normal("intercept", mu=0, tau=1e-3)
+        betas = pm.Normal("betas", mu=0, tau=1e-3, dims="features_idx")
+        mu = pm.Deterministic(
+            "mu",
+            pm.math.exp(intercept + pm.math.sum(X * betas, axis=1) + phi[adj_idx]),
             dims="obs_idx",
         )
         pm.Poisson(
@@ -327,17 +374,19 @@ def make_varying_intercept_pooled_covariate_car_model(prep_df, W, *args, **kwarg
         species_idx = pm.ConstantData(
             "species_idx", species_cat.cat.codes, dims="obs_idx"
         )
-        adj_idx = pm.ConstantData("adj_idx", prep_df.index.values, dims="obs_idx")
+        adj_idx = pm.ConstantData(
+            "adj_idx", prep_df.index.values.astype(int), dims="obs_idx"
+        )
         X = pm.ConstantData(
             "X", scaled_data_df.values, dims=("obs_idx", "features_idx")
         )
 
         alpha = pm.Beta("alpha", 5, 1)
-        sigma_phi = pm.Uniform("sigma_phi", 0, 20)
+        tau_phi = pm.Gamma("tau_phi", 1e-3, 1e-3)
         phi = pm.CAR(
             "phi",
             mu=np.zeros(W.shape[0]),
-            tau=1 / sigma_phi,
+            tau=tau_phi,
             alpha=alpha,
             W=W,
             dims="adj_idx",
@@ -353,7 +402,7 @@ def make_varying_intercept_pooled_covariate_car_model(prep_df, W, *args, **kwarg
         betas = pm.Normal(
             "betas",
             mu=betas_bar,
-            tau=1 / betas_sigma,
+            sigma=pm.math.sqrt(betas_sigma),
             dims="features_idx",
         )
         mu = pm.Deterministic(
@@ -380,7 +429,9 @@ def make_varying_intercept_varying_covariate_car_model(prep_df, W, *args, **kwar
         species_idx = pm.ConstantData(
             "species_idx", species_cat.cat.codes, dims="obs_idx"
         )
-        adj_idx = pm.ConstantData("adj_idx", prep_df.index.values, dims="obs_idx")
+        adj_idx = pm.ConstantData(
+            "adj_idx", prep_df.index.values.astype(int), dims="obs_idx"
+        )
         X = pm.ConstantData(
             "X", scaled_data_df.values, dims=("obs_idx", "features_idx")
         )
@@ -390,22 +441,25 @@ def make_varying_intercept_varying_covariate_car_model(prep_df, W, *args, **kwar
         phi = pm.CAR(
             "phi",
             mu=np.zeros(W.shape[0]),
-            tau=1 / sigma_phi,
+            tau=1 / sigma_phi**2,
             alpha=alpha,
             W=W,
             dims="adj_idx",
         )
         intercept_bar = pm.Normal("intercept_bar", mu=0, sigma=1.5)
-        intercept_sigma = pm.Exponential("intercept_sigma", 1)
+        intercept_sigma = pm.Gamma("intercept_sigma", 1e-3, 1e-3)
         intercept = pm.Normal(
-            "intercept", mu=intercept_bar, tau=1 / intercept_sigma, dims="species_idx"
+            "intercept",
+            mu=intercept_bar,
+            sigma=pm.math.sqrt(intercept_sigma),
+            dims="species_idx",
         )
         betas_bar = pm.Normal("betas_bar", mu=0, sigma=1.5)
-        betas_sigma = pm.Exponential("betas_sigma", 1)
+        betas_sigma = pm.Gamma("betas_sigma", 1e-3, 1e-3)
         betas = pm.Normal(
             "betas",
             mu=betas_bar,
-            tau=1 / betas_sigma,
+            sigma=pm.math.sqrt(betas_sigma),
             dims=("species_idx", "features_idx"),
         )
         mu = pm.Deterministic(
