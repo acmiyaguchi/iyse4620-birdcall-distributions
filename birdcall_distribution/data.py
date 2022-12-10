@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from birdcall_distribution.geo import (
     add_lonlat_columns,
     convert_to_adjacency_matrix,
-    generate_grid_adjaceny_list,
+    generate_grid_adjacency_list,
     get_adjacency_mapping,
     get_grid_meta,
 )
@@ -21,7 +21,7 @@ def prepare_dataframe(ee_path, train_path, n_species=3):
 
     grid_meta = get_grid_meta(region, grid_size)
 
-    adjacency_list = generate_grid_adjaceny_list(grid_meta.grid)
+    adjacency_list = generate_grid_adjacency_list(grid_meta.grid)
     mapping = get_adjacency_mapping(adjacency_list)
     W = convert_to_adjacency_matrix(adjacency_list)
 

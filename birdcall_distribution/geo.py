@@ -112,7 +112,7 @@ def add_lonlat_columns(df, grid):
     return df
 
 
-def generate_grid_adjaceny_list(polygons):
+def generate_grid_adjacency_list(polygons):
     """We generate an adjacency list for the same grid of polygons we create.
     Find any intersecting polygons and add them to the adjacency list.
     """
