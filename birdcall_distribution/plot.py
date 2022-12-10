@@ -21,11 +21,11 @@ def dataframe_color_getter(df, key_col, value_col, key):
         return (1, 1, 1, 0)
 
 
-def plot_lonlat_points(geometry, map_dims, df):
+def plot_geometry(geometry, map_dims, **kwargs):
     xmin, xmax, ymin, ymax = map_dims
 
     # plot map with lattice of polygons
-    fig = plt.figure(figsize=(12, 7))
+    fig = plt.figure(**kwargs)
     projection = ccrs.PlateCarree()
     ax = plt.axes(projection=projection)
     ax.set_xlim([xmin, xmax])
@@ -37,9 +37,14 @@ def plot_lonlat_points(geometry, map_dims, df):
         edgecolor="k",
         facecolor=(1, 1, 1, 0),
     )
-
-    ax.scatter(df["longitude"], df["latitude"], transform=ccrs.PlateCarree())
     ax.stock_img()
+    return fig, ax
+
+
+def plot_lonlat_points(geometry, map_dims, df, **kwargs):
+    # plot map with lattice of polygons
+    _, ax = plot_geometry(geometry, map_dims, **kwargs)
+    ax.scatter(df["longitude"], df["latitude"], transform=ccrs.PlateCarree())
 
 
 def plot_grid(

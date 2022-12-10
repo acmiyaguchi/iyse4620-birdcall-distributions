@@ -1,13 +1,17 @@
+import json
 from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
 from cartopy.io import shapereader
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, mapping
 from shapely.ops import unary_union
 
 CA_EXTENT = (-125, -114, 32, 43)
 WESTERN_US_EXTENT = (-125, -101, 31, 50)
+NA_EXTENT = (-170, -50, 10, 80)
+SA_EXTENT = (-90, -30, -60, 20)
+AMERICAS_EXTENT = (-170, -30, -60, 80)
 
 
 def get_shape_us_state(state_name):
@@ -48,6 +52,27 @@ def get_western_us_geometry():
     ]
     shapes = [get_shape_us_state(state).geometry for state in states]
     return unary_union(shapes)
+
+
+def get_americas_geometry():
+    """Get the geometry for north and south america, except greenland."""
+    reader = shapereader.Reader(
+        shapereader.natural_earth(
+            resolution="50m", category="cultural", name="admin_0_countries"
+        )
+    )
+    shapes = [
+        s.geometry
+        for s in reader.records()
+        if s.attributes["CONTINENT"] in ["North America", "South America"]
+        and s.attributes["NAME"] != "Greenland"
+    ]
+    return unary_union(shapes)
+
+
+def geometry_to_geojson(geometry):
+    """Convert a shapely geometry to a geojson string."""
+    return json.dumps(mapping(geometry))
 
 
 def generate_grid(geometry, map_dims, grid_dims):

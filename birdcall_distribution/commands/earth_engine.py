@@ -8,9 +8,11 @@ from shapely.geometry import mapping
 from tqdm.auto import tqdm
 
 from birdcall_distribution.geo import (
+    AMERICAS_EXTENT,
     CA_EXTENT,
     WESTERN_US_EXTENT,
     generate_grid,
+    get_americas_geometry,
     get_california_geometry,
     get_western_us_geometry,
 )
@@ -26,6 +28,10 @@ def t_modis_to_celsius(t_modis):
 
 def get_stats(grid, key, start_ds="2019-01-01", end_ds="2022-01-01", scale=1000):
     """Get statistics for population, elevation, temperature, and land cover."""
+
+    # NOTE: in every function call? This seems like a waste of network requests
+    ee.Initialize()
+
     geojson = mapping(grid[key])
     poi = ee.Geometry.Polygon(geojson["coordinates"])
 
@@ -94,13 +100,11 @@ def get_stats(grid, key, start_ds="2019-01-01", end_ds="2022-01-01", scale=1000)
 def main():
     """Run google earth engine to get elevation, temperature, and land cover data."""
     parser = ArgumentParser()
-    parser.add_argument("region", type=str, choices=["ca", "western_us"])
+    parser.add_argument("region", type=str, choices=["ca", "western_us", "americas"])
     parser.add_argument("grid_size", type=int)
     parser.add_argument("output", type=str)
     parser.add_argument("--parallelism", type=int, default=8)
     args = parser.parse_args()
-
-    ee.Initialize()
 
     if args.region == "ca":
         geometry = get_california_geometry()
@@ -108,6 +112,9 @@ def main():
     elif args.region == "western_us":
         geometry = get_western_us_geometry()
         extent = WESTERN_US_EXTENT
+    elif args.region == "americas":
+        geometry = get_americas_geometry()
+        extent = AMERICAS_EXTENT
     else:
         raise ValueError(f"Invalid region: {args.region}")
 

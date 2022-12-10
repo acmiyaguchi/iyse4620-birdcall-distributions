@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "birdcall_distribution"
-version = "1.0.0"
+version = "1.1.0"
 description = ""
 authors = ["Anthony Miyaguchi <acmiyaguchi@gatech.edu>"]
 license = "MIT"
@@ -12,7 +12,7 @@ matplotlib = "3.5.2"
 pandas = "^1.5.1"
 pymc = "^4.3.0"
 arviz = "*"
-earthengine-api = "^0.1.330"
+earthengine-api = "^0.1.334"
 tqdm = "^4.64.1"
 pyarrow = "^10.0.0"
 graphviz = "^0.20.1"
