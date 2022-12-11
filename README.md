@@ -75,6 +75,12 @@ python -m birdcall_distribution.commands.model_assets intercept_covariate_car da
 python -m birdcall_distribution.commands.model_assets intercept_covariate_car data/ee_v3_ca_1.parquet data/processed/models/intercept_covariate_car/ca/1 --n-species 10 --cores 4 --samples 5000
 ```
 
+We also generate the manifest:
+
+```bash
+python -m birdcall_distribution.commands.generate_manifest data/processed data/processed/manifest.json
+```
+
 ### uploading data directory to google cloud
 
 We have set up a public facing bucket with copies wheels and data files.
