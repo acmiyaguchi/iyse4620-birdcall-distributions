@@ -58,6 +58,17 @@ python -m birdcall_distribution.commands.earth_engine --parallelism 16 americas 
 
 These are saved as parquet files and are checked into the repository.
 
+### generating assets for demo
+
+```bash
+python -m birdcall_distribution.commands.model_assets intercept_car data/ee_v3_americas_5.parquet data/processed/models/intercept_car/americas/5 --n-species 2 --cores 4
+
+python -m birdcall_distribution.commands.model_assets intercept_car data/ee_v3_western_us_2.parquet data/processed/models/intercept_car/western_us/2 --n-species 16 --cores 4 --samples 5000
+
+python -m birdcall_distribution.commands.model_assets intercept_car data/ee_v3_ca_1.parquet data/processed/models/intercept_car/ca/1 --n-species 16 --cores 4 --samples 5000
+
+```
+
 ### uploading data directory to google cloud
 
 We have set up a public facing bucket with copies wheels and data files.

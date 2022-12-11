@@ -10,10 +10,10 @@ from .geo import get_grid_meta
 COLORMAP = "viridis"
 
 
-def dataframe_color_getter(df, key_col, value_col, key):
+def dataframe_color_getter(df, key_col, value_col, key, vmin=None, vmax=None):
     property = df[value_col]
-    vmin = property.min()
-    vmax = property.max()
+    vmin = vmin or property.min()
+    vmax = vmax or property.max()
     color_getter = lambda x: plt.get_cmap(COLORMAP)(np.interp(x, [vmin, vmax], [0, 1]))
     try:
         return color_getter(df[df[key_col] == key][value_col].values[0])
@@ -105,7 +105,17 @@ def plot_grid(
     ax.stock_img()
 
 
-def plot_species(df, species, prop="y", ax=None, title=None, **kwargs):
+def plot_species(
+    df,
+    species,
+    prop="y",
+    ax=None,
+    title=None,
+    vmin=None,
+    vmax=None,
+    figsize=(5, 7),
+    **kwargs,
+):
     """Used to plot the distribution of a species in a dataset"""
     sub_df = df[df.primary_label == species]
     region = sub_df.region.values[0]
@@ -113,15 +123,19 @@ def plot_species(df, species, prop="y", ax=None, title=None, **kwargs):
     grid_meta = get_grid_meta(region, grid_size)
 
     # note that we use a shared colorbar
+    vmin = vmin or df[prop].min()
+    vmax = vmax or df[prop].max()
     plot_grid(
         grid_meta.geometry,
         grid_meta.extent,
         grid_meta.grid,
-        color_callback=partial(dataframe_color_getter, sub_df, "grid_id", prop),
-        vmin=df[prop].min(),
-        vmax=df[prop].max(),
+        color_callback=partial(
+            dataframe_color_getter, sub_df, "grid_id", prop, vmin=vmin, vmax=vmax
+        ),
+        vmin=vmin,
+        vmax=vmax,
         draw_gridline=False,
-        figsize=(5, 7),
+        figsize=figsize,
         ax=ax,
         **kwargs,
     )
@@ -140,6 +154,9 @@ def plot_ppc_species(
     ax=None,
     title=None,
     show_hist=False,
+    vmin=None,
+    vmax=None,
+    figsize=(5, 7),
     **kwargs,
 ):
     pred_df = prep_df.copy()
@@ -161,15 +178,19 @@ def plot_ppc_species(
     grid_meta = get_grid_meta(region, grid_size)
 
     # plot the posterior predictive
+    vmin = vmin or pred_df[prop].min()
+    vmax = vmax or pred_df[prop].max()
     plot_grid(
         grid_meta.geometry,
         grid_meta.extent,
         grid_meta.grid,
-        color_callback=partial(dataframe_color_getter, sub_df, "grid_id", prop),
-        vmin=pred_df[prop].min(),
-        vmax=pred_df[prop].max(),
+        color_callback=partial(
+            dataframe_color_getter, sub_df, "grid_id", prop, vmin=vmin, vmax=vmax
+        ),
+        vmin=vmin,
+        vmax=vmax,
         draw_gridline=False,
-        figsize=(5, 7),
+        figsize=figsize,
         ax=ax,
         **kwargs,
     )
