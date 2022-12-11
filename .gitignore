@@ -3,6 +3,8 @@ data/*
 .venv/
 .vscode
 __pycache__/
+.terraform/
+.terraform.lock.hcl
 
 !data/*.parquet
 !data/raw
