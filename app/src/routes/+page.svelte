@@ -3,7 +3,9 @@
   import { uniq } from "lodash";
   import Table from "$lib/Table.svelte";
 
-  const url = import.meta.env.VITE_HOST || "http://localhost:4000/data";
+  const url =
+    import.meta.env.VITE_HOST ||
+    "https://storage.googleapis.com/iyse6420-birdcall-distribution/processed";
 
   let manifest = [];
   let model = "intercept_car";
