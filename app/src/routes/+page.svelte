@@ -52,24 +52,30 @@ Anthony Miyaguchi, 2022-12-11
 </p>
 
 <!--this div will end up being the left hand model-->
-<div class="side-menu">
-  <div>
-    <!-- dropdown with a choice of model -->
-    <select bind:value={model}>
-      {#each models as item}
-        <option value={item}>{item}</option>
-      {/each}
-    </select>
+<div class="menu">
+  <div class="bordered">
+    <!--title is left of the options-->
+    <b>models: </b>
+    <!-- radio input for models -->
+    {#each models as item}
+      <label>
+        <input type="radio" bind:group={model} value={item} />
+        {item}
+      </label>
+    {/each}
   </div>
-  <div>
-    <!-- dropdown with a choice of region -->
-    <select bind:value={region}>
-      {#each regions as item}
-        <option value={item}>{item}</option>
-      {/each}
-    </select>
+  <div class="bordered">
+    <b>regions: </b>
+    <!-- radio with a choice of region -->
+    {#each regions as item}
+      <label>
+        <input type="radio" bind:group={region} value={item} />
+        {item}
+      </label>
+    {/each}
   </div>
-  <div>
+  <div class="bordered">
+    <b>species: </b>
     <!-- dropdown with a choice of specie -->
     {#each species as item}
       <label>
@@ -119,3 +125,15 @@ if we really wanted to. -->
     </div>
   {/if}
 {/if}
+
+<style>
+  /* add padding between menu items */
+  .menu > div {
+    padding: 5px;
+    max-width: 600px;
+  }
+  .bordered {
+    /* make these so they have a thin border */
+    border: 1px solid black;
+  }
+</style>
