@@ -135,7 +135,7 @@ def make_pooled_intercept_car_model(prep_df, W, *args, **kwargs):
         pm.Poisson(
             "y",
             mu=mu,
-            observed=np.ma.masked_invalid(prep_df.y.values).filled(1e-6),
+            observed=np.ma.masked_invalid(prep_df.y.values).filled(0),
             dims="obs_idx",
         )
     return model
