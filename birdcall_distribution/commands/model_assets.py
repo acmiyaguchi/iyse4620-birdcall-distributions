@@ -41,21 +41,40 @@ def generate_assets(model_type, df, W, output_path, species, cores=4, samples=10
     sub_df["pred"] = ppc.posterior_predictive.y.values.reshape(
         -1, sub_df.shape[0]
     ).mean(axis=0)
-    sub_df["log_pred"] = np.log(sub_df.pred + 1)
+    sub_df["log_pred"] = np.log(sub_df.pred)
     sub_df[
         ["primary_label", "grid_id", "region", "grid_size", "y", "pred", "log_pred"]
     ].to_json(f"{path}/ppc_{species}.json", orient="records")
 
     # try to use a consistent color scaling across plots of the same species
-    vmin = 0
-    vmax = max(sub_df.y.max(), sub_df.pred.max()) * 1.1
+    vmin = 1e-1
+    vmax = max(sub_df.y.max(), sub_df.pred.max())
 
+    sub_df["y_log"] = np.log(sub_df.y + vmin)
     figsize = (5, 5)
     plot_species(
-        df, species, title=f"observed, {species}", vmin=vmin, vmax=vmax, figsize=figsize
+        sub_df,
+        species,
+        prop="y",
+        title=f"observed, {species}",
+        vmin=vmin,
+        vmax=vmax,
+        figsize=figsize,
     )
     plt.tight_layout()
     plt.savefig(f"{path}/observed_{species}.png")
+
+    plot_species(
+        sub_df,
+        species,
+        prop="y_log",
+        title=f"observed, {species}, log scale",
+        vmin=np.log(vmin),
+        vmax=np.log(vmax),
+        figsize=figsize,
+    )
+    plt.tight_layout()
+    plt.savefig(f"{path}/observed_{species}_log.png")
 
     plot_ppc_species(
         sub_df,
@@ -63,7 +82,7 @@ def generate_assets(model_type, df, W, output_path, species, cores=4, samples=10
         species,
         prop="log_pred",
         title=f"posterior predictive, {species}, log scale",
-        vmin=np.log(vmin + 1),
+        vmin=np.log(vmin),
         vmax=np.log(vmax),
         figsize=figsize,
     )

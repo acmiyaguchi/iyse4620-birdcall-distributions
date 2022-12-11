@@ -121,7 +121,7 @@ def get_grid_meta(region, grid_size):
     if region == "western_us":
         geometry = get_western_us_geometry()
         extent = WESTERN_US_EXTENT
-    elif region == "california":
+    elif region == "ca":
         geometry = get_california_geometry()
         extent = CA_EXTENT
     elif region == "americas":

@@ -164,7 +164,7 @@ def plot_ppc_species(
     pred_df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, shape[0]).mean(
         axis=0
     )
-    pred_df["log_pred"] = np.log(pred_df.pred + 1)
+    pred_df["log_pred"] = np.log(pred_df.pred)
     sub_df = pred_df[prep_df.primary_label == species]
 
     if show_hist:
@@ -264,7 +264,7 @@ def plot_ppc_species_subplot(
 
     df = df.copy()
     df["pred"] = ppc.posterior_predictive.y.values.reshape(-1, df.shape[0]).mean(axis=0)
-    df["log_pred"] = np.log(df.pred + 1)
+    df["log_pred"] = np.log(df.pred)
 
     fig, axs = plt.subplots(
         *shape, figsize=(9, 7), subplot_kw={"projection": ccrs.PlateCarree()}
