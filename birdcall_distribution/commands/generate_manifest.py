@@ -39,7 +39,7 @@ def main():
         item = {
             "path": path.relative_to(root).as_posix(),
             "images": {
-                "observed_linear": f"observed_{label}_linear.png",
+                "observed_linear": f"observed_{label}.png",
                 "observed_log": f"observed_{label}_log.png",
                 "ppc_linear": f"ppc_{label}_linear.png",
                 "ppc_log": f"ppc_{label}_log.png",

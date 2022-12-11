@@ -88,7 +88,7 @@ To upload new data, authenticate against `gcloud` and ensure you have access to 
 
 ```bash
 gcloud storage buckets create gs://iyse6420-birdcall-distribution
-gcloud storage cp -r data/ gs://iyse6420-birdcall-distribution/
+gsutil -m rsync -r data/ gs://iyse6420-birdcall-distribution/
 ```
 
 ### installing cartopy on windows
