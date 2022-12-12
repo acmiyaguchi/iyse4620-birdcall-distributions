@@ -4,6 +4,8 @@
   import Table from "$lib/Table.svelte";
   import FrontMatter from "$lib/docs/FrontMatter.md";
 
+  export let data;
+
   const url =
     import.meta.env.VITE_HOST ||
     "https://storage.googleapis.com/iyse6420-birdcall-distribution/processed";
@@ -47,6 +49,7 @@
 
 <FrontMatter />
 
+<h2>options</h2>
 <!--this div will end up being the left hand model-->
 <div class="menu">
   <div class="bordered">

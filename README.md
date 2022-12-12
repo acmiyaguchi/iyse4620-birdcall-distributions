@@ -1,10 +1,11 @@
-# bircall-distribution
+# birdcall-distribution
 
 This repository contains [IYSE 6420](https://omscs.gatech.edu/isye-6420-bayesian-statistics) project code for building BirdCLEF birdcall distribution maps.
 It uses Bayesian modeling techniques to estimate frequencies of birdcall recording metadata.
 This project relies heavily on [PyMC](https://www.pymc.io) and [Google Earth Engine](https://earthengine.google.com/).
 
 Below are a few plots from the project, which are discussed in more detail in the report.
+Also check out a demo of the resulting plots for various models and regions [here](https://iyse6420-birdcall-distributions.acmiyaguchi.me/).
 
 ![car distribution](./report/figures/alpha_quail.png)
 
