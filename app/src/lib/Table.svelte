@@ -27,33 +27,37 @@
   }
 </script>
 
-<div>
-  <table cellpadding="5">
-    <tr>
-      {#each columns as column}
-        <th>{column.name}</th>
-      {/each}
-    </tr>
-    {#each chunked[idx] as row}
+{#if columns.length > 0}
+  <div>
+    <table cellpadding="5">
       <tr>
         {#each columns as column}
-          <td>
-            {#if column.html}
-              {@html column.format(row)}
-            {:else}{column.format(row)}{/if}
-          </td>
+          <th>{column.name}</th>
         {/each}
       </tr>
-    {/each}
-  </table>
-  <div>
-    {#if pages > 1}
-      <button disabled={!(idx > 0)} on:click={prev}>Prev</button>
-      <button disabled={!(idx < pages - 1)} on:click={next}>Next</button>
-      <span>{total} rows - page {idx + 1} of {pages}</span>
-    {/if}
+      {#each chunked[idx] as row}
+        {#if row.length > 0}
+          <tr>
+            {#each columns as column}
+              <td>
+                {#if column.html}
+                  {@html column.format(row)}
+                {:else}{column.format(row)}{/if}
+              </td>
+            {/each}
+          </tr>
+        {/if}
+      {/each}
+    </table>
+    <div>
+      {#if pages > 1}
+        <button disabled={!(idx > 0)} on:click={prev}>Prev</button>
+        <button disabled={!(idx < pages - 1)} on:click={next}>Next</button>
+        <span>{total} rows - page {idx + 1} of {pages}</span>
+      {/if}
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   table,

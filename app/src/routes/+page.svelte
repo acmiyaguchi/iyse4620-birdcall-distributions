@@ -4,8 +4,6 @@
   import Table from "$lib/Table.svelte";
   import FrontMatter from "$lib/docs/FrontMatter.md";
 
-  export let data;
-
   const url =
     import.meta.env.VITE_HOST ||
     "https://storage.googleapis.com/iyse6420-birdcall-distribution/processed";
@@ -15,12 +13,24 @@
   let region = "americas";
   let specie = null;
 
+  // for trace data
   let trace = [];
+  let should_show = true;
 
   onMount(async () => {
     const res = await fetch(`${url}/manifest.json`);
     manifest = await res.json();
   });
+
+  function show_significant(trace, should_show) {
+    if (!should_show) {
+      return trace;
+    }
+    // only keep elements that do not include 0 on their credible interval
+    return trace.filter(
+      (x) => (x["hdi_2.5%"] < 0 && x["hdi_97.5%"] < 0) || (x["hdi_2.5%"] > 0 && x["hdi_97.5%"] > 0)
+    );
+  }
 
   $: models = uniq(manifest.map((item) => item.model));
   $: regions = uniq(manifest.map((item) => item.region));
@@ -106,21 +116,47 @@ if we really wanted to. -->
     </div>
   </div>
   <h3>trace summary</h3>
+
+  <!-- checkbox option for should show -->
+  <div>
+    <label>
+      <input type="checkbox" bind:checked={should_show} />
+      show only significant parameters
+    </label>
+  </div>
+
   {#if trace.length > 0}
     <div>
       <h4>misc parameters</h4>
       <!-- for some reason, we can't filter out betas directly (???)-->
-      <Table data={trace.filter((x) => !x.index.includes("phi[") && !x.index.includes("mu["))} />
+      <Table
+        data={show_significant(
+          trace.filter((x) => !x.index.includes("phi[") && !x.index.includes("mu[")),
+          should_show
+        )}
+      />
     </div>
 
     <div>
       <h4>spatial random effect phi</h4>
-      <Table data={trace.filter((x) => x.index.includes("phi["))} paginationSize={10} />
+      <Table
+        data={show_significant(
+          trace.filter((x) => x.index.includes("phi[")),
+          should_show
+        )}
+        paginationSize={10}
+      />
     </div>
     <div>
       <h4>poisson prior mu</h4>
 
-      <Table data={trace.filter((x) => x.index.includes("mu["))} paginationSize={10} />
+      <Table
+        data={show_significant(
+          trace.filter((x) => x.index.includes("mu[")),
+          should_show
+        )}
+        paginationSize={10}
+      />
     </div>
   {/if}
 {/if}
