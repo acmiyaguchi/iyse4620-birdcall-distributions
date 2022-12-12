@@ -10,7 +10,9 @@
     "format": "prettier --plugin-search-dir . --write ."
   },
   "devDependencies": {
+    "@rollup/plugin-replace": "^5.0.1",
     "@sveltejs/adapter-auto": "next",
+    "@sveltejs/adapter-static": "^1.0.0-next.49",
     "@sveltejs/kit": "next",
     "prettier": "^2.8.0",
     "prettier-plugin-svelte": "^2.8.1",
