@@ -1,5 +1,5 @@
 <script>
-  import { chunk } from "lodash";
+  import { chunk } from "lodash-es";
   export let data = [];
   export let paginationSize = null;
   export let columns = null;

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { uniq } from "lodash";
+  import { uniq } from "lodash-es";
   import Table from "$lib/Table.svelte";
 
   const url =
