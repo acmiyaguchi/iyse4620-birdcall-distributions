@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { uniq } from "lodash-es";
   import Table from "$lib/Table.svelte";
+  import FrontMatter from "$lib/docs/FrontMatter.md";
 
   const url =
     import.meta.env.VITE_HOST ||
@@ -44,14 +45,7 @@
 
 <h1>IYSE 4620 Birdcall Distributions</h1>
 
-<p />
-Anthony Miyaguchi, 2022-12-11
-
-<p>
-  See the source on <a href="https://github.com/acmiyaguchi/iyse4620-birdcall-distributions"
-    >GitHub</a
-  > for more details.
-</p>
+<FrontMatter />
 
 <!--this div will end up being the left hand model-->
 <div class="menu">
