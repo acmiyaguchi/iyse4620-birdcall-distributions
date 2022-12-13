@@ -1,14 +1,13 @@
 <script>
-  export let path = [];
+  // export let path = [];
   export let client_status;
 </script>
 
 <nav class="box">
   <div>
-    <a href="/">home</a>
-    {#each path as part, i}
-      <a href={"/" + path.slice(0, i).join("/")}>{part}</a>
-    {/each}
+    <a href="/">[ home ]</a>
+    <a href="/earth-engine">[ earth engine ]</a>
+    <a href="https://github.com/acmiyaguchi/iyse6420-birdcall-distributions">[ github ]</a>
   </div>
   {#if client_status}
     <div>

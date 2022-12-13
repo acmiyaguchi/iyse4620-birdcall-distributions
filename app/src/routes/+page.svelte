@@ -48,7 +48,7 @@
   $: console.log(trace.filter((x) => x.index.includes("beta")));
 </script>
 
-<h1>IYSE 4620 Birdcall Distributions</h1>
+<h1>IYSE 6420 Birdcall Distributions</h1>
 
 <FrontMatter />
 
