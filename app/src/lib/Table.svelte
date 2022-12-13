@@ -27,7 +27,7 @@
   }
 </script>
 
-{#if columns.length > 0}
+{#if data.length > 0}
   <div>
     <table cellpadding="5">
       <tr>
@@ -36,17 +36,15 @@
         {/each}
       </tr>
       {#each chunked[idx] as row}
-        {#if row.length > 0}
-          <tr>
-            {#each columns as column}
-              <td>
-                {#if column.html}
-                  {@html column.format(row)}
-                {:else}{column.format(row)}{/if}
-              </td>
-            {/each}
-          </tr>
-        {/if}
+        <tr>
+          {#each columns as column}
+            <td>
+              {#if column.html}
+                {@html column.format(row)}
+              {:else}{column.format(row)}{/if}
+            </td>
+          {/each}
+        </tr>
       {/each}
     </table>
     <div>
@@ -57,6 +55,9 @@
       {/if}
     </div>
   </div>
+{:else}
+  <!-- bordered box -->
+  <div class="no-data">no data</div>
 {/if}
 
 <style>
@@ -64,5 +65,11 @@
   th,
   td {
     border: 1px solid black;
+  }
+  .no-data {
+    border: 1px solid black;
+    padding: 5px;
+    max-width: 100px;
+    text-align: center;
   }
 </style>

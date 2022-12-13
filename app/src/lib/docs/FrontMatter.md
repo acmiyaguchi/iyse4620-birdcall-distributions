@@ -10,6 +10,9 @@ Last Modified: {buildTime}
 This website demonstrates the results of building birdcall distribution maps with Bayesian modeling methods.
 The project was completed for the [IYSE 6420: Bayesian Statistics](https://omscs.gatech.edu/isye-6420-bayesian-statistics) course as part of my Fall 2022 semester in Georgia Tech's [OMSCS](https://omscs.gatech.edu/) program. See the [project report] and source on [GitHub] for more details.
 
+We use the geographic metadata from the [BirdCLEF 2022](https://www.kaggle.com/c/birdclef-2022) competition dataset to build a map that shows where birdcall recordings were made.
+We fit the data to a Poisson [Generalized Linear Model (GLM)][glm] to estimate covariate or random effects.
+
 <button on:click={() => show = !show}>
 {#if show}
 Hide model details
@@ -20,12 +23,9 @@ Tell me more about the model
 
 {#if show}
 
-We use the geographic metadata from the [BirdCLEF 2022](https://www.kaggle.com/c/birdclef-2022) competition dataset to build a map that shows where birdcall recordings were made.
-We split each region into a grid and summarize birdcall recording observations into each grid, which helps when fit a Bayesian model to the data.
-
-We build a Poisson [Generalized Linear Model (GLM)][glm] to model the number of observations in each grid cell.
+The observations are modeled as events drawn from a Poisson distribution with a mean $\theta$, where $\theta$ is a function that can be composed of elements such as features $X$ and random effects $\phi$.
 We use a [conditional auto-regressive (CAR)][car] distribution to model spatial random effects (i.e. how strongly the results in one cell are correlated with the results in neighboring cells).
-It is a special case of the multi-variate normal distribution where $W$ is a positive definite matrix that encodes the correlation between neighboring cells and $\alpha$ is a scalar that controls the strength of the correlation.
+It is a special case of the multi-variate normal distribution where $W$ is an adjacency matrix that encodes neighborhood relationships and $\alpha$ is a scalar that controls the strength of the correlation between neighbors.
 
 $$
 \begin{equation}

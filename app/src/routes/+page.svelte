@@ -1,15 +1,18 @@
 <script>
   import { onMount } from "svelte";
   import { uniq } from "lodash-es";
-  import Table from "$lib/Table.svelte";
   import FrontMatter from "$lib/docs/FrontMatter.md";
+  import PlotMatter from "$lib/docs/PlotMatter.md";
+  import Traces from "$lib/docs/Traces.md";
+  import ModelOptions from "./ModelOptions.svelte";
+  import TraceSummary from "./TraceSummary.md";
 
   const url =
     import.meta.env.VITE_HOST ||
     "https://storage.googleapis.com/iyse6420-birdcall-distribution/processed";
 
   let manifest = [];
-  let model = "intercept_car";
+  let model = "intercept_covariate_car";
   let region = "americas";
   let specie = null;
 
@@ -21,16 +24,6 @@
     const res = await fetch(`${url}/manifest.json`);
     manifest = await res.json();
   });
-
-  function show_significant(trace, should_show) {
-    if (!should_show) {
-      return trace;
-    }
-    // only keep elements that do not include 0 on their credible interval
-    return trace.filter(
-      (x) => (x["hdi_2.5%"] < 0 && x["hdi_97.5%"] < 0) || (x["hdi_2.5%"] > 0 && x["hdi_97.5%"] > 0)
-    );
-  }
 
   $: models = uniq(manifest.map((item) => item.model));
   $: regions = uniq(manifest.map((item) => item.region));
@@ -59,47 +52,18 @@
 
 <FrontMatter />
 
-<h2>options</h2>
-<!--this div will end up being the left hand model-->
-<div class="menu">
-  <div class="bordered">
-    <!--title is left of the options-->
-    <b>models: </b>
-    <!-- radio input for models -->
-    {#each models as item}
-      <label>
-        <input type="radio" bind:group={model} value={item} />
-        {item}
-      </label>
-    {/each}
-  </div>
-  <div class="bordered">
-    <b>regions: </b>
-    <!-- radio with a choice of region -->
-    {#each regions as item}
-      <label>
-        <input type="radio" bind:group={region} value={item} />
-        {item}
-      </label>
-    {/each}
-  </div>
-  <div class="bordered">
-    <b>species: </b>
-    <!-- dropdown with a choice of specie -->
-    {#each species as item}
-      <label>
-        <input type="radio" bind:group={specie} value={item} />
-        {item}
-      </label>
-    {/each}
-  </div>
-</div>
-
 <!-- now we show the actual images; we can break this out into another component
 if we really wanted to. -->
+<h2>plots</h2>
+
+<PlotMatter />
+
+<h3>options</h3>
+
+<ModelOptions {models} {regions} {species} bind:model bind:region bind:specie />
+
 {#if selected}
-  <h2>{specie}, {region}, {selected.grid_size} degree solution</h2>
-  <h3>plots</h3>
+  <h3>{specie}, {region}, {selected.grid_size} degree resolution</h3>
   <div class="primary">
     <div>
       <h4>linear scale</h4>
@@ -115,60 +79,14 @@ if we really wanted to. -->
       <img src={`${url}/${selected.path}/${selected.images.ppc_log}`} alt="ppc, log" />
     </div>
   </div>
-  <h3>trace summary</h3>
 
-  <!-- checkbox option for should show -->
-  <div>
-    <label>
-      <input type="checkbox" bind:checked={should_show} />
-      show only significant parameters
-    </label>
-  </div>
+  <h2>trace summary</h2>
 
-  {#if trace.length > 0}
-    <div>
-      <h4>misc parameters</h4>
-      <!-- for some reason, we can't filter out betas directly (???)-->
-      <Table
-        data={show_significant(
-          trace.filter((x) => !x.index.includes("phi[") && !x.index.includes("mu[")),
-          should_show
-        )}
-      />
-    </div>
+  <Traces />
 
-    <div>
-      <h4>spatial random effect phi</h4>
-      <Table
-        data={show_significant(
-          trace.filter((x) => x.index.includes("phi[")),
-          should_show
-        )}
-        paginationSize={10}
-      />
-    </div>
-    <div>
-      <h4>poisson prior mu</h4>
+  <h3>options</h3>
 
-      <Table
-        data={show_significant(
-          trace.filter((x) => x.index.includes("mu[")),
-          should_show
-        )}
-        paginationSize={10}
-      />
-    </div>
-  {/if}
+  <ModelOptions {models} {regions} {species} bind:model bind:region bind:specie bind:should_show />
+
+  <TraceSummary {trace} {should_show} />
 {/if}
-
-<style>
-  /* add padding between menu items */
-  .menu > div {
-    padding: 5px;
-    max-width: 600px;
-  }
-  .bordered {
-    /* make these so they have a thin border */
-    border: 1px solid black;
-  }
-</style>
