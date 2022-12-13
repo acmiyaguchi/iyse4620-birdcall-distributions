@@ -82,6 +82,10 @@ We also generate the manifest:
 python -m birdcall_distribution.commands.generate_manifest data/processed data/processed/manifest.json
 ```
 
+```bash
+python -m birdcall_distribution.commands.earth_engine_assets data data/processed/earth_engine
+```
+
 ### uploading data directory to google cloud
 
 We have set up a public facing bucket with copies wheels and data files.

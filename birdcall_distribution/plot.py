@@ -77,7 +77,7 @@ def plot_grid(
     for key, polygon in grid.items():
         ax.add_feature(
             cfeature.ShapelyFeature([polygon], projection),
-            edgecolor="gray",
+            # edgecolor="gray",
             facecolor=color_callback(key) if color_callback else (1, 1, 1, 0),
         )
 
