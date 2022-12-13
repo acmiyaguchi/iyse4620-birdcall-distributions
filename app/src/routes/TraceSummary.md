@@ -43,7 +43,7 @@ The prior $\phi$ is drawn from the CAR distribution i.e. $\phi_i \sim CAR(\mu_i,
   paginationSize={10}
 />
 
-Observe how the random effects are more significant in the simpler `intercept_car` model than in the more complex `intercept_car_spatial` model.
+Observe how the random effects explain more of the variance in the simpler `intercept_car` model than in the more complex `intercept_car_spatial` model.
 
 ### poisson parameter $\mu$
 

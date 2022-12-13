@@ -3,7 +3,7 @@
   import { uniq } from "lodash-es";
   import FrontMatter from "$lib/docs/FrontMatter.md";
   import PlotMatter from "$lib/docs/PlotMatter.md";
-  import Traces from "$lib/docs/Traces.md";
+  import TraceMatter from "$lib/docs/TraceMatter.md";
   import ModelOptions from "./ModelOptions.svelte";
   import TraceSummary from "./TraceSummary.md";
 
@@ -63,7 +63,12 @@ if we really wanted to. -->
 <ModelOptions {models} {regions} {species} bind:model bind:region bind:specie />
 
 {#if selected}
-  <h3>{specie}, {region}, {selected.grid_size} degree resolution</h3>
+  <h3>
+    {specie},
+    {region},
+    {selected.grid_size} degree resolution,
+    {trace.filter((x) => x.index.includes("phi[")).length} cells
+  </h3>
   <div class="primary">
     <div>
       <h4>linear scale</h4>
@@ -82,7 +87,7 @@ if we really wanted to. -->
 
   <h2>trace summary</h2>
 
-  <Traces />
+  <TraceMatter />
 
   <h3>options</h3>
 
@@ -90,3 +95,12 @@ if we really wanted to. -->
 
   <TraceSummary {trace} {should_show} />
 {/if}
+
+<style>
+  img {
+    max-width: 450px;
+  }
+  .primary {
+    text-align: center;
+  }
+</style>
