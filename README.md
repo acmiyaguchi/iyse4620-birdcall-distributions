@@ -63,16 +63,11 @@ These are saved as parquet files and are checked into the repository.
 
 ```bash
 python -m birdcall_distribution.commands.model_assets intercept_car data/ee_v3_americas_5.parquet data/processed/models/intercept_car/americas/5 --n-species 10 --cores 4 --samples 5000
-
 python -m birdcall_distribution.commands.model_assets intercept_car data/ee_v3_western_us_2.parquet data/processed/models/intercept_car/western_us/2 --n-species 10 --cores 4 --samples 5000
-
 python -m birdcall_distribution.commands.model_assets intercept_car data/ee_v3_ca_1.parquet data/processed/models/intercept_car/ca/1 --n-species 10 --cores 4 --samples 5000
 
-
 python -m birdcall_distribution.commands.model_assets intercept_covariate_car data/ee_v3_americas_5.parquet data/processed/models/intercept_covariate_car/americas/5 --n-species 10 --cores 4 --samples 5000
-
 python -m birdcall_distribution.commands.model_assets intercept_covariate_car data/ee_v3_western_us_2.parquet data/processed/models/intercept_covariate_car/western_us/2 --n-species 10 --cores 4 --samples 5000
-
 python -m birdcall_distribution.commands.model_assets intercept_covariate_car data/ee_v3_ca_1.parquet data/processed/models/intercept_covariate_car/ca/1 --n-species 10 --cores 4 --samples 5000
 ```
 
@@ -80,6 +75,7 @@ We also generate the manifest:
 
 ```bash
 python -m birdcall_distribution.commands.generate_manifest data/processed data/processed/manifest.json
+python -m birdcall_distribution.commands.bird_name_mapping data/processed data/processed
 ```
 
 ```bash

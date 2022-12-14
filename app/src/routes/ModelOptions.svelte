@@ -2,6 +2,7 @@
   export let models = [];
   export let regions = [];
   export let species = [];
+  export let species_mapper = {};
   export let model;
   export let region;
   export let specie;
@@ -37,7 +38,7 @@
     {#each species as item}
       <label>
         <input type="radio" bind:group={specie} value={item} />
-        {item}
+        {species_mapper[item]}
       </label>
     {/each}
   </div>

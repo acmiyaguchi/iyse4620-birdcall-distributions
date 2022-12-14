@@ -13,6 +13,7 @@
     "https://storage.googleapis.com/iyse6420-birdcall-distribution/processed";
 
   let manifest = [];
+  let species_mapper = {};
   let model = "intercept_covariate_car";
   let region = "americas";
   let specie = null;
@@ -22,8 +23,10 @@
   let should_show = true;
 
   onMount(async () => {
-    const res = await fetch(`${url}/manifest.json`);
+    let res = await fetch(`${url}/manifest.json`);
     manifest = await res.json();
+    res = await fetch(`${url}/species_mapping.json`);
+    species_mapper = await res.json();
   });
 
   $: models = uniq(manifest.map((item) => item.model));
@@ -43,6 +46,7 @@
     fetch(`${url}/${selected.path}/${selected.traces.trace}`)
       .then((res) => res.json())
       .then((data) => (trace = [...data]));
+  $: common_name = specie ? species_mapper[specie] : null;
   // NOTE: we don't really need the ppc data atm, but we could use it to show a
   // histogram or something
 
@@ -59,15 +63,30 @@
 
 <h3>Options</h3>
 
-<ModelOptions {models} {regions} {species} bind:model bind:region bind:specie />
+<ModelOptions
+  {models}
+  {regions}
+  {species}
+  {species_mapper}
+  bind:model
+  bind:region
+  bind:specie
+  bind:should_show
+/>
 
 {#if selected}
   <h3>
-    {specie},
+    {common_name} (<a href="https://ebird.org/species/{specie}">{specie}</a>),
     {region},
-    {selected.grid_size} degree resolution,
+    {selected.grid_size}&deg; resolution,
     {trace.filter((x) => x.index.includes("phi[")).length} cells
   </h3>
+
+  <p>
+    Find more information about the {common_name} on its
+    <a href="https://ebird.org/species/{specie}">eBird page.</a>
+  </p>
+
   <div class="primary">
     <h4>linear scale</h4>
     <div>
@@ -90,12 +109,21 @@
 
   <h3>options</h3>
 
-  <ModelOptions {models} {regions} {species} bind:model bind:region bind:specie bind:should_show />
+  <ModelOptions
+    {models}
+    {regions}
+    {species}
+    {species_mapper}
+    bind:model
+    bind:region
+    bind:specie
+    bind:should_show
+  />
 
   <h3>
-    {specie},
+    {common_name} (<a href="https://ebird.org/species/{specie}">{specie}</a>),
     {region},
-    {selected.grid_size} degree resolution,
+    {selected.grid_size}&deg; resolution,
     {trace.filter((x) => x.index.includes("phi[")).length} cells
   </h3>
 
