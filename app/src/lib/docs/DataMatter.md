@@ -9,6 +9,8 @@ Here are the direct links to source data:
 
 You can load this data directly into a Python session using `pandas` and `pyarrow`:
 
+<div class="overflow-container">
+
 ```python
 >>> import pandas as pd
 >>> df = pd.read_parquet("https://storage.googleapis.com/iyse6420-birdcall-distribution/ee_v3_ca_1.parquet")
@@ -24,3 +26,11 @@ You can load this data directly into a Python session using `pandas` and `pyarro
 >>> df.shape
 (68, 30)
 ```
+
+</div>
+
+<style>
+    .overflow-container {
+        overflow-x: auto;
+    }
+</style>

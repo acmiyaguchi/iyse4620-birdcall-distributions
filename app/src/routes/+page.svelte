@@ -69,8 +69,8 @@
     {trace.filter((x) => x.index.includes("phi[")).length} cells
   </h3>
   <div class="primary">
+    <h4>linear scale</h4>
     <div>
-      <h4>linear scale</h4>
       <img
         src={`${url}/${selected.path}/${selected.images.observed_linear}`}
         alt="observed, linear"
@@ -92,6 +92,13 @@
 
   <ModelOptions {models} {regions} {species} bind:model bind:region bind:specie bind:should_show />
 
+  <h3>
+    {specie},
+    {region},
+    {selected.grid_size} degree resolution,
+    {trace.filter((x) => x.index.includes("phi[")).length} cells
+  </h3>
+
   <TraceSummary {trace} {should_show} />
 {/if}
 
@@ -105,5 +112,11 @@
   }
   .primary {
     text-align: center;
+  }
+
+  @media (max-width: 450px) {
+    img {
+      max-width: 100%;
+    }
   }
 </style>

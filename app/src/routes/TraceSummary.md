@@ -16,25 +16,28 @@
 
 {#if trace.length > 0}
 
-### misc parameters
+#### misc parameters
 
 This table contains posterior estimates for hyper-parameters for the CAR distribution such as $\alpha$ and $\tau$, as well as the intercept and slope parameters $\beta$ for the linear regression.
 
+<div class="table">
 <Table
   data={show_significant(
     trace.filter((x) => !x.index.includes("phi[") && !x.index.includes("mu[")),
     should_show
   )}
 />
+</div>
 
 Note that the land cover classification features often change from species to species.
 We can infer types of habits or environmental preferences from the significant features in the model.
 
-### spatial random effect $\phi$
+#### spatial random effect $\phi$
 
 This measures random spatial variation across grid cells.
 The prior $\phi$ is drawn from the CAR distribution i.e. $\phi_i \sim CAR(\mu_i, \tau_i, \alpha, W)$.
 
+<div class="table">
 <Table
   data={show_significant(
     trace.filter((x) => x.index.includes("phi[")),
@@ -42,14 +45,16 @@ The prior $\phi$ is drawn from the CAR distribution i.e. $\phi_i \sim CAR(\mu_i,
   )}
   paginationSize={10}
 />
+</div>
 
 Observe how the random effects explain more of the variance in the simpler `intercept_car` model than in the more complex `intercept_car_spatial` model.
 
-### poisson parameter $\mu$
+#### poisson parameter $\mu$
 
 The prior $\mu$ is the rate parameter, which controls the expected number of observations in each grid cell.
 Note there are some notational inconsistencies here; this is the same as our $\theta$ parameter in the model definitions, and is properly known as $\lambda$ in the Poisson distribution.
 
+<div class="table">
 <Table
   data={show_significant(
     trace.filter((x) => x.index.includes("mu[")),
@@ -57,5 +62,13 @@ Note there are some notational inconsistencies here; this is the same as our $\t
   )}
   paginationSize={10}
 />
+</div>
 
 {/if}
+
+<style>
+  .table {
+    width: 100%;
+    overflow: auto;
+  }
+</style>
