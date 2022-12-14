@@ -10,7 +10,7 @@
     <a href="https://github.com/acmiyaguchi/iyse6420-birdcall-distributions">[ github ]</a>
   </div>
   {#if client_status}
-    <div>
+    <div class="box">
       <div>
         <b>git rev</b>:
         <a
@@ -24,8 +24,12 @@
 </nav>
 
 <style>
+  a {
+    text-decoration: none;
+  }
   .box {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 </style>

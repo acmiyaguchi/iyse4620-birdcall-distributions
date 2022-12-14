@@ -6,6 +6,7 @@
   import TraceMatter from "$lib/docs/TraceMatter.md";
   import ModelOptions from "./ModelOptions.svelte";
   import TraceSummary from "./TraceSummary.md";
+  import DataMatter from "$lib/docs/DataMatter.md";
 
   const url =
     import.meta.env.VITE_HOST ||
@@ -52,13 +53,11 @@
 
 <FrontMatter />
 
-<!-- now we show the actual images; we can break this out into another component
-if we really wanted to. -->
-<h2>plots</h2>
+<h2>Plots</h2>
 
 <PlotMatter />
 
-<h3>options</h3>
+<h3>Options</h3>
 
 <ModelOptions {models} {regions} {species} bind:model bind:region bind:specie />
 
@@ -85,7 +84,7 @@ if we really wanted to. -->
     </div>
   </div>
 
-  <h2>trace summary</h2>
+  <h2>Trace Summary</h2>
 
   <TraceMatter />
 
@@ -95,6 +94,10 @@ if we really wanted to. -->
 
   <TraceSummary {trace} {should_show} />
 {/if}
+
+<h2>Data</h2>
+
+<DataMatter />
 
 <style>
   img {
